@@ -1,7 +1,7 @@
-import * as Store from "./store.js?v=202611121627";
-import { CONFIG } from "./config.js?v=202611121627";
+import * as Store from "./store.js?v=202611121724";
+import { CONFIG } from "./config.js?v=202611121724";
 import { getLang, setLang, makeT, UI } from "./i18n.js";
-import { parseFees } from "./utils.js?v=202611121627";
+import { parseFees } from "./utils.js?v=202611121724";
 
 const lang = getLang();
 const t = makeT(lang);
@@ -199,23 +199,51 @@ async function pageUniversities(type) {
     <div class="grid g4" id="ugrid"></div></div></section>`;
 }
 
+const lines = (txt) => String(txt || "").split("\n").map((x) => x.replace(/^[\s•\-–*\d.)]+/, "").trim()).filter(Boolean);
 async function pageUniversity(id) {
   const u = (await col("universities")).find((x) => x.id === id);
   if (!u) return notFound();
   const fees = parseFees(u.fees);
-  return `<section class="page-head uni-head"><div class="wrap uni-head-in"><div class="uni-logo">${uniThumb(u)}</div><div>
-    <span class="tag ${u.type}">${t(u.type)}</span><h1>${esc(P(u.name))}</h1>
-    <p>${esc(P(u.city))}${u.founded ? ` · ${t("founded")} ${esc(u.founded)}` : ""}</p></div></div></section>
+  const programs = lines(P(u.programs)), reqs = lines(P(u.requirements));
+  const today = new Date().toISOString().slice(0, 10);
+  const dates = (await col("calendar")).filter((e) => e.universityId === u.id || (!e.universityId && e.university?.en && e.university.en === u.name?.en));
+  const otherName = lang === "tr" ? u.name?.en : u.name?.tr;
+  const sections = [
+    ["about", t("uni_about"), P(u.description) ? paras(P(u.description)) : ""],
+    ["dates", t("uni_dates"), dates.length ? `<div class="uni-dates">${dates.map((e) => { const st = calStatus(e, today); return `<div class="ud st-${st}"><span class="st-badge">${t("cal_" + st)}</span>
+        <dl><div><dt>${t("cal_start")}</dt><dd dir="ltr">${esc(dmy(e.regStart)) || "—"}</dd></div><div><dt>${t("cal_end")}</dt><dd dir="ltr">${esc(dmy(e.regEnd)) || "—"}</dd></div>
+        <div><dt>${t("cal_results")}</dt><dd>${esc(dmy(P(e.results))) || "—"}</dd></div><div><dt>${t("cal_certs")}</dt><dd>${esc(P(e.certificates)) || "—"}</dd></div></dl></div>`; }).join("")}</div>` : ""],
+    ["programs", t("uni_programs"), programs.length ? `<ul class="chips">${programs.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""],
+    ["fees", t("annual_fee"), fees.length ? `<table class="table"><thead><tr><th>${t("program")}</th><th>${t("annual_fee")}</th></tr></thead><tbody>${fees.map((f) => `<tr><td>${esc(P(f.name))}</td><td>${money(f.price, u.currency) || esc(f.price) || t("ask_price")}</td></tr>`).join("")}</tbody></table><p class="note">${esc(P(S.priceNote))}</p>` : ""],
+    ["requirements", t("uni_requirements"), reqs.length ? `<ul class="checks">${reqs.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""],
+  ].filter((x) => x[2]);
+  const facts = [[t("city"), P(u.city)], [t("founded"), u.founded], [t("uni_type"), t(u.type)], [t("uni_lang"), P(u.teachingLang)]].filter((x) => x[1]);
+  return `<section class="uni-hero ${u.cover ? "has-img" : ""}" ${u.cover ? `style="--cover:url('${esc(u.cover)}')"` : ""}>
+    ${u.cover ? "" : '<div class="hero-pattern" aria-hidden="true"></div><img class="uni-hero-mark" src="assets/mark-light.png" alt="">'}
+    <div class="wrap uni-hero-in">
+      <nav class="crumbs"><a href="#/">${t("nav_home")}</a> / <a href="#/universities/${u.type}">${t(u.type === "gov" ? "nav_gov" : "nav_private")}</a></nav>
+      <div class="uni-hero-title">${u.image ? `<div class="uni-logo"><img src="${esc(u.image)}" alt=""></div>` : ""}
+        <div><span class="tag ${u.type}">${t(u.type === "gov" ? "nav_gov" : "nav_private")}</span>
+        <h1>${esc(P(u.name))}${otherName && otherName !== P(u.name) ? ` <span class="alt-name" dir="ltr">${esc(otherName)}</span>` : ""}</h1>
+        <p>${esc(P(u.city))}${u.founded ? ` · ${t("founded")} ${esc(u.founded)}` : ""}</p></div></div>
+    </div></section>
+  ${sections.length > 1 ? `<nav class="uni-tabs"><div class="wrap">${sections.map(([k, l]) => `<a href="#/university/${esc(u.id)}?s=${k}" data-sec="${k}">${l}</a>`).join("")}</div></nav>` : ""}
   <section class="section"><div class="wrap two-col">
-    <article class="prose">${paras(P(u.description))}
-      ${fees.length ? `<h2>${t("annual_fee")}</h2><table class="table"><thead><tr><th>${t("program")}</th><th>${t("annual_fee")}</th></tr></thead><tbody>${fees.map((f) => `<tr><td>${esc(P(f.name))}</td><td>${money(f.price, u.currency) || esc(f.price) || t("ask_price")}</td></tr>`).join("")}</tbody></table><p class="note">${esc(P(S.priceNote))}</p>` : ""}
+    <article class="uni-body">${sections.map(([k, l, h]) => `<div class="uni-sec" id="sec-${k}"><h2>${l}</h2>${h}</div>`).join("") || `<p class="muted">${t("uni_soon")}</p>`}
+      <div class="uni-cta card"><div><h3>${t("uni_cta_title")}</h3><p>${t("uni_cta_text")}</p></div><a href="#/apply?university=${encodeURIComponent(u.id)}" class="btn btn-gold btn-lg">${t("apply_now")}</a></div>
     </article>
-    <aside class="side-card">
-      ${u.type === "private" && u.priceFrom ? `<p class="price big">${t("price_from")} <b>${money(u.priceFrom, u.currency)}</b> <small>${t("per_year")}</small></p>` : ""}
-      <a href="#/apply?university=${encodeURIComponent(u.id)}" class="btn btn-gold btn-block">${t("apply_now")}</a>
-      <a href="${waLink(P(u.name))}" target="_blank" rel="noopener" class="btn btn-outline btn-block">${icons.wa} ${t("whatsapp_us")}</a>
-      ${u.website ? `<a href="${esc(u.website)}" target="_blank" rel="noopener" class="link">${t("website")} ↗</a>` : ""}
-      <a href="#/universities/${u.type}" class="link">${t("back")}</a>
+    <aside class="uni-side">
+      <div class="side-card">
+        ${u.type === "private" && u.priceFrom ? `<p class="price big">${t("price_from")} <b>${money(u.priceFrom, u.currency)}</b> <small>${t("per_year")}</small></p>` : ""}
+        ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
+        <a href="#/apply?university=${encodeURIComponent(u.id)}" class="btn btn-gold btn-block">${t("apply_now")}</a>
+        ${u.website ? `<a href="${esc(u.website)}" target="_blank" rel="noopener" class="link">${t("website")} ↗</a>` : ""}
+      </div>
+      <div class="side-card contact-box">
+        <h3>${t("uni_help")}</h3><p>${t("uni_help_text")}</p>
+        ${S.whatsapp ? `<a href="${waLink(P(u.name))}" target="_blank" rel="noopener" class="btn btn-wa btn-block">${icons.wa} WhatsApp</a>` : ""}
+        ${S.telegram ? `<a href="${esc(S.telegram)}" target="_blank" rel="noopener" class="btn btn-tg btn-block">${icons.tg} ${t("uni_telegram")}</a>` : ""}
+      </div>
     </aside></div></section>`;
 }
 
@@ -254,6 +282,7 @@ function calStatus(e, today) {
 async function pageCalendar() {
   const today = new Date().toISOString().slice(0, 10);
   const order = { open: 0, soon: 1, closed: 2 };
+  const unis = await col("universities");
   const list = (await col("calendar")).map((e) => ({ ...e, st: calStatus(e, today) }))
     .sort((a, b) => order[a.st] - order[b.st] || String(a.st === "closed" ? b.regEnd : a.regEnd || a.regStart).localeCompare(String(a.st === "closed" ? a.regEnd : b.regEnd || b.regStart)));
   setTimeout(() => {
@@ -272,7 +301,8 @@ async function pageCalendar() {
     draw();
   });
   const rows = list.map((e) => {
-    const link = e.link || "#/apply";
+    const uni = e.universityId ? unis.find((u) => u.id === e.universityId) : unis.find((u) => u.name?.en && u.name.en === e.university?.en);
+    const link = uni ? `#/university/${uni.id}` : e.link || "#/apply";
     const ext = /^https?:/.test(link);
     return `<tr class="st-${e.st}" data-st="${e.st}" data-s="${esc([e.university?.ar, e.university?.en, e.university?.tr, e.city?.ar, e.city?.en, e.city?.tr].join(" ").toLowerCase())}">
       <td data-l="${t("cal_university")}"><b>${esc(P(e.university))}</b><span class="st-badge">${t("cal_" + e.st)}</span></td>
@@ -467,7 +497,9 @@ async function route() {
   document.querySelectorAll(".nav a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + path || (path === "/" && a.getAttribute("href") === "#/")));
   const h1 = app.querySelector("h1");
   document.title = (path === "/" ? "" : (h1 ? h1.textContent + " | " : "")) + (P(S.siteName) || "KAM");
-  if (!params.has("keep")) window.scrollTo(0, 0);
+  const sec = params.get("s") && document.getElementById("sec-" + params.get("s"));
+  if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+  else window.scrollTo(0, 0);
   if (path === "/prices") {
     const q = document.getElementById("pq");
     q?.addEventListener("input", () => {

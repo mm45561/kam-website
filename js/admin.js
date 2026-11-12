@@ -1,7 +1,7 @@
-import * as Store from "./store.js?v=202611121627";
-import { SCHEMAS, SETTINGS_FIELDS } from "./schemas.js?v=202611121627";
-import { SEED } from "./seed.js?v=202611121627";
-import { parseFees } from "./utils.js?v=202611121627";
+import * as Store from "./store.js?v=202611121724";
+import { SCHEMAS, SETTINGS_FIELDS } from "./schemas.js?v=202611121724";
+import { SEED } from "./seed.js?v=202611121724";
+import { parseFees } from "./utils.js?v=202611121724";
 
 const LANGS = [["ar", "عربي"], ["en", "English"], ["tr", "Türkçe"]];
 const P = (o) => (o && typeof o === "object" ? o.ar || o.en || o.tr || "" : o ?? "");
@@ -202,6 +202,7 @@ function fieldHtml(f, val) {
     case "date": return `<label class="fld">${f.label}${req}<input name="${f.name}" type="date" dir="ltr" value="${esc(val || "")}">${help}</label>`;
     case "url": return `<label class="fld">${f.label}${req}<input name="${f.name}" type="url" dir="ltr" placeholder="https://" value="${esc(val || "")}">${help}</label>`;
     case "bool": return `<label class="fld check"><input name="${f.name}" type="checkbox" ${val ? "checked" : ""}> ${f.label}</label>`;
+    case "uniref": return `<label class="fld">${f.label}${req}<select name="${f.name}"><option value="">— بدون —</option>${(f.unis || []).map((u) => `<option value="${esc(u.id)}" ${String(val ?? "") === u.id ? "selected" : ""}>${esc(P(u.name))}</option>`).join("")}</select>${help}</label>`;
     case "select": return `<label class="fld">${f.label}${req}<select name="${f.name}">${f.options.map(([k, l]) => `<option value="${esc(k)}" ${String(val ?? "") === k ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>${help}</label>`;
     case "image": return `<div class="fld img-fld" data-name="${f.name}"><span>${f.label}</span>
         <div class="img-row"><div class="img-prev">${val ? `<img src="${esc(val)}">` : "<em>لا توجد صورة</em>"}</div>
@@ -300,8 +301,11 @@ async function viewCollection(view, key) {
   });
 }
 
-function editItem(key, item) {
-  const sc = SCHEMAS[key];
+async function editItem(key, item) {
+  const sc0 = SCHEMAS[key];
+  let unis = [];
+  if (sc0.fields.some((f) => f.type === "uniref")) unis = await Store.list("universities", { all: true });
+  const sc = { ...sc0, fields: sc0.fields.map((f) => (f.type === "uniref" ? { ...f, unis } : f)) };
   const isNew = !item;
   item = item || { published: true };
   const m = modal(`<h2>${isNew ? "إضافة" : "تعديل"} ${sc.single}</h2>
@@ -313,6 +317,16 @@ function editItem(key, item) {
   const form = $("#ed", m);
   bindFields(form);
   $("#cancel", m).onclick = closeModal;
+  if (form.elements.universityId) {
+    form.elements.universityId.addEventListener("change", () => {
+      const u = unis.find((x) => x.id === form.elements.universityId.value);
+      if (!u) return;
+      for (const [fname, src] of [["university", u.name], ["city", u.city]]) {
+        const fs = form.querySelector(`fieldset[data-name="${fname}"]`);
+        if (fs && src) fs.querySelectorAll("[data-lang]").forEach((i) => { i.value = src[i.dataset.lang] || ""; });
+      }
+    });
+  }
   if (key === "universities") {
     const ta = form.elements.fees, pv = $("#fees-prev", m);
     const upd = () => {

@@ -321,3 +321,57 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
   .cal-table td:first-child::before { display: none; }
   .cal-act { padding-bottom: 12px !important; }
 }
+
+/* university page */
+.uni-hero { position: relative; min-height: 380px; display: flex; align-items: stretch; color: #fff; background: linear-gradient(135deg, var(--green-dark), var(--green)); overflow: hidden; }
+.uni-hero.has-img { background: linear-gradient(180deg, rgba(0,0,0,.15) 30%, rgba(20,35,31,.88)), var(--cover) center/cover; min-height: 460px; }
+.uni-hero-mark { position: absolute; inset-inline-end: 6%; top: 50%; transform: translateY(-50%); width: 260px; opacity: .14; }
+.uni-hero-in { position: relative; padding: 24px 0 36px; display: flex; flex-direction: column; justify-content: space-between; gap: 40px; min-height: inherit; }
+.crumbs { font-size: .88rem; opacity: .85; }
+.crumbs a { color: #fff; }
+.uni-hero-title { display: flex; gap: 20px; align-items: flex-end; }
+.uni-hero h1 { font-size: clamp(1.8rem, 4.5vw, 3rem); margin: 8px 0 4px; text-shadow: 0 2px 12px rgba(0,0,0,.3); }
+.alt-name { display: block; font-size: .5em; font-weight: 500; opacity: .85; margin-top: 4px; }
+.uni-hero p { margin: 0; opacity: .9; }
+.uni-hero .tag { position: static; display: inline-block; background: var(--gold); color: var(--green-dark); }
+.uni-hero .uni-logo { width: 96px; height: 96px; background: #fff; border-radius: 18px; padding: 8px; flex: none; }
+.uni-hero .uni-logo img { width: 100%; height: 100%; object-fit: contain; }
+.uni-tabs { background: var(--white); border-bottom: 1px solid var(--line); position: sticky; top: 76px; z-index: 20; }
+.uni-tabs .wrap { display: flex; gap: 4px; overflow-x: auto; }
+.uni-tabs a { padding: 14px 16px; color: var(--ink); white-space: nowrap; border-bottom: 3px solid transparent; }
+.uni-tabs a:hover { color: var(--green); border-color: var(--gold); }
+.uni-body { min-width: 0; }
+.uni-sec { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; scroll-margin-top: 150px; }
+.uni-sec h2 { color: var(--green); font-size: 1.3rem; padding-bottom: 10px; border-bottom: 2px solid var(--ivory); margin-bottom: 16px; }
+.uni-sec p:last-child { margin-bottom: 0; }
+.chips { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.chips li { background: var(--ivory); color: var(--green); padding: 6px 14px; border-radius: 999px; font-size: .93rem; }
+.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.checks li { padding-inline-start: 30px; position: relative; }
+.checks li::before { content: "✓"; position: absolute; inset-inline-start: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: var(--gold); display: grid; place-items: center; font-size: .8rem; top: 2px; }
+.uni-dates { display: grid; gap: 12px; }
+.ud { background: var(--bg); border: 1px solid rgba(0,0,0,.06); border-inline-start: 5px solid var(--c); border-radius: 12px; padding: 14px 16px; }
+.ud dl { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0 0; }
+.ud dt { font-size: .8rem; color: var(--muted); }
+.ud dd { margin: 0; font-weight: 600; }
+.uni-cta { flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; padding: 24px; background: var(--ivory); box-shadow: none; flex-wrap: wrap; }
+.uni-cta h3 { color: var(--green); }
+.uni-cta p { margin: 0; color: var(--muted); }
+.uni-side { display: grid; gap: 18px; position: sticky; top: 140px; }
+.uni-side .side-card { position: static; }
+.facts { display: grid; gap: 8px; margin: 0; }
+.facts div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--line); padding-bottom: 6px; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; font-weight: 600; text-align: end; }
+.contact-box { background: linear-gradient(160deg, var(--green), var(--green-dark)); color: var(--ivory); border: 0; }
+.contact-box h3 { color: var(--gold); margin: 0; }
+.contact-box p { margin: 0; opacity: .9; font-size: .93rem; }
+.btn-wa { background: #25D366; color: #fff; }
+.btn-tg { background: #229ED9; color: #fff; }
+@media (max-width: 860px) {
+  .uni-side { position: static; }
+  .uni-tabs { top: 0; }
+  .ud dl { grid-template-columns: 1fr 1fr; }
+  .uni-hero { min-height: 300px; }
+  .uni-hero.has-img { min-height: 360px; }
+}

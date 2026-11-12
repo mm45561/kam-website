@@ -134,3 +134,24 @@ export const SEED = {
 
   applications: [],
 };
+
+// Extra details shown on each university page (examples, edit them in the admin panel)
+const REQ = L(
+  "صورة جواز السفر\nالشهادة الثانوية مترجمة ومصدّقة\nكشف العلامات\nصورة شخصية\nنتيجة اليوس أو السات (حسب الجامعة)\nشهادة لغة إن وجدت",
+  "Passport copy\nTranslated and certified high-school diploma\nTranscript\nPersonal photo\nYÖS or SAT result (depending on the university)\nLanguage certificate if available",
+  "Pasaport fotokopisi\nTercüme ve onaylı lise diploması\nTranskript\nVesikalık fotoğraf\nYÖS veya SAT sonucu (üniversiteye göre)\nVarsa dil belgesi"
+);
+const PROGRAMS = {
+  gov: L("الطب\nطب الأسنان\nالصيدلة\nالهندسة المدنية\nهندسة الحاسوب\nالهندسة الكهربائية\nالعمارة\nإدارة الأعمال\nالاقتصاد\nالحقوق",
+    "Medicine\nDentistry\nPharmacy\nCivil Engineering\nComputer Engineering\nElectrical Engineering\nArchitecture\nBusiness Administration\nEconomics\nLaw",
+    "Tıp\nDiş Hekimliği\nEczacılık\nİnşaat Mühendisliği\nBilgisayar Mühendisliği\nElektrik Mühendisliği\nMimarlık\nİşletme\nİktisat\nHukuk"),
+  private: L("الطب\nطب الأسنان\nالصيدلة\nهندسة الحاسوب\nهندسة البرمجيات\nالعمارة\nإدارة الأعمال\nعلم النفس\nالتمريض",
+    "Medicine\nDentistry\nPharmacy\nComputer Engineering\nSoftware Engineering\nArchitecture\nBusiness Administration\nPsychology\nNursing",
+    "Tıp\nDiş Hekimliği\nEczacılık\nBilgisayar Mühendisliği\nYazılım Mühendisliği\nMimarlık\nİşletme\nPsikoloji\nHemşirelik"),
+};
+for (const u of SEED.content.universities) {
+  u.requirements = u.requirements || REQ;
+  u.programs = u.programs || PROGRAMS[u.type];
+  u.teachingLang = u.teachingLang || (u.type === "gov" ? L("التركية – الإنكليزية", "Turkish – English", "Türkçe – İngilizce") : L("الإنكليزية – التركية", "English – Turkish", "İngilizce – Türkçe"));
+  u.cover = u.cover || "";
+}

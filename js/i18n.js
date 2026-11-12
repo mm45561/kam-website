@@ -1,8 +1,9 @@
 // Interface text in three languages. Content (universities, services...) is edited in the admin panel.
-import { CONFIG } from "./config.js?v=202611121627";
+import { CONFIG } from "./config.js?v=202611121724";
 
 export const UI = {
   ar: {
+    uni_about: "عن الجامعة", uni_dates: "مواعيد التسجيل", uni_programs: "التخصصات المتاحة", uni_requirements: "شروط القبول والأوراق المطلوبة", uni_type: "نوع الجامعة", uni_lang: "لغة الدراسة", uni_soon: "التفاصيل قريباً. تواصل معنا لمعرفة المزيد.", uni_cta_title: "تريد التسجيل في هذه الجامعة؟", uni_cta_text: "أرسل طلبك وسنتولى التقديم عنك ومتابعة القبول.", uni_help: "تحتاج مساعدة؟", uni_help_text: "مستشارونا يجيبون على أسئلتك عن هذه الجامعة.", uni_telegram: "قناتنا على تلغرام",
     cal_title: "تقويم المفاضلات ومواعيد التسجيل", cal_sub: "مواعيد التسجيل في الجامعات التركية، محدّثة باستمرار", cal_search_label: "ابحث عن جامعة:", cal_search_ph: "اكتب اسم الجامعة أو المدينة…", cal_clear: "مسح البحث", cal_university: "اسم الجامعة", cal_start: "بدء التسجيل", cal_end: "انتهاء التسجيل", cal_results: "تاريخ النتائج", cal_certs: "الشهادات المقبولة", cal_link: "رابط التسجيل", cal_register: "سجّل هنا", cal_open: "التسجيل مفتوح", cal_soon: "يفتح قريباً", cal_closed: "انتهى التسجيل", cal_note: "المواعيد قد تتغير حسب إعلانات الجامعات. تواصل معنا للتأكد قبل التقديم.",
     dir: "rtl", langName: "العربية",
     nav_home: "الرئيسية", nav_universities: "الجامعات", nav_gov: "الجامعات الحكومية", nav_private: "الجامعات الخاصة", nav_prices: "أسعار الجامعات الخاصة",
@@ -32,6 +33,7 @@ export const UI = {
     upcoming: "المواعيد القادمة", past: "مواعيد سابقة", not_found: "الصفحة غير موجودة", demo_banner: "نسخة تجريبية: البيانات محفوظة في هذا المتصفح فقط",
   },
   en: {
+    uni_about: "About the university", uni_dates: "Registration dates", uni_programs: "Available programs", uni_requirements: "Admission requirements & documents", uni_type: "Type", uni_lang: "Language of instruction", uni_soon: "Details coming soon. Contact us to learn more.", uni_cta_title: "Want to study at this university?", uni_cta_text: "Send your application and we will apply for you and follow up your acceptance.", uni_help: "Need help?", uni_help_text: "Our advisors answer your questions about this university.", uni_telegram: "Our Telegram channel",
     cal_title: "Admission calendar & registration dates", cal_sub: "Registration dates of Turkish universities, kept up to date", cal_search_label: "Find a university:", cal_search_ph: "Type a university or city name…", cal_clear: "Clear", cal_university: "University", cal_start: "Registration opens", cal_end: "Registration closes", cal_results: "Results date", cal_certs: "Accepted certificates", cal_link: "Register", cal_register: "Register here", cal_open: "Open", cal_soon: "Opening soon", cal_closed: "Closed", cal_note: "Dates may change according to university announcements. Contact us to confirm before applying.",
     dir: "ltr", langName: "English",
     nav_home: "Home", nav_universities: "Universities", nav_gov: "Public universities", nav_private: "Private universities", nav_prices: "Private university prices",
@@ -61,6 +63,7 @@ export const UI = {
     upcoming: "Upcoming dates", past: "Past dates", not_found: "Page not found", demo_banner: "Demo version: data is saved in this browser only",
   },
   tr: {
+    uni_about: "Üniversite hakkında", uni_dates: "Başvuru tarihleri", uni_programs: "Bölümler", uni_requirements: "Kabul şartları ve belgeler", uni_type: "Tür", uni_lang: "Eğitim dili", uni_soon: "Detaylar yakında. Bilgi için bize ulaşın.", uni_cta_title: "Bu üniversitede okumak ister misiniz?", uni_cta_text: "Başvurunuzu gönderin, başvuruyu ve kabul takibini biz yapalım.", uni_help: "Yardım mı lazım?", uni_help_text: "Danışmanlarımız bu üniversiteyle ilgili sorularınızı yanıtlar.", uni_telegram: "Telegram kanalımız",
     cal_title: "Başvuru takvimi ve kayıt tarihleri", cal_sub: "Türk üniversitelerinin başvuru tarihleri, güncel olarak", cal_search_label: "Üniversite ara:", cal_search_ph: "Üniversite veya şehir adı yazın…", cal_clear: "Temizle", cal_university: "Üniversite", cal_start: "Başvuru başlangıcı", cal_end: "Başvuru bitişi", cal_results: "Sonuç tarihi", cal_certs: "Kabul edilen belgeler", cal_link: "Kayıt", cal_register: "Başvur", cal_open: "Başvuru açık", cal_soon: "Yakında açılıyor", cal_closed: "Başvuru kapandı", cal_note: "Tarihler üniversite duyurularına göre değişebilir. Başvurmadan önce bizimle teyit edin.",
     dir: "ltr", langName: "Türkçe",
     nav_home: "Ana sayfa", nav_universities: "Üniversiteler", nav_gov: "Devlet üniversiteleri", nav_private: "Vakıf üniversiteleri", nav_prices: "Vakıf üniversitesi ücretleri",
