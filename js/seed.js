@@ -105,10 +105,12 @@ export const SEED = {
     ],
 
     calendar: [
-      item({ title: L("بدء التسجيل في الجامعات الخاصة", "Private university applications open", "Vakıf üniversitesi başvuruları başlıyor"), date: "2027-01-15", note: L("مثال: عدّل التاريخ من لوحة الإدارة", "Example: edit this date in the admin panel", "Örnek: tarihi yönetim panelinden düzenleyin") }),
-      item({ title: L("المنحة التركية: فتح باب التقديم", "Türkiye Scholarships: applications open", "Türkiye Bursları: başvurular açılıyor"), date: "2027-01-10", note: L("", "", "") }),
-      item({ title: L("مفاضلات الجامعات الحكومية", "Public university admission rounds", "Devlet üniversitesi başvuru dönemleri"), date: "2027-05-01", note: L("", "", "") }),
-      item({ title: L("بداية العام الدراسي", "Academic year starts", "Akademik yıl başlıyor"), date: "2027-09-20", note: L("", "", "") }),
+      item({ university: L("جامعة إسطنبول", "Istanbul University", "İstanbul Üniversitesi"), city: L("إسطنبول", "Istanbul", "İstanbul"), regStart: "2026-11-01", regEnd: "2026-11-25", results: L("2026-12-05", "2026-12-05", "2026-12-05"), certificates: L("يوس – سات – ثانوية", "YÖS – SAT – High school", "YÖS – SAT – Lise"), link: "" }),
+      item({ university: L("جامعة يلدز التقنية", "Yıldız Technical University", "Yıldız Teknik Üniversitesi"), city: L("إسطنبول", "Istanbul", "İstanbul"), regStart: "2026-11-05", regEnd: "2026-11-30", results: L("بشكل دوري", "periodically", "dönemsel"), certificates: L("يوس – سات", "YÖS – SAT", "YÖS – SAT"), link: "" }),
+      item({ university: L("جامعة مرمرة", "Marmara University", "Marmara Üniversitesi"), city: L("إسطنبول", "Istanbul", "İstanbul"), regStart: "2026-11-10", regEnd: "2026-12-10", results: L("2026-12-20", "2026-12-20", "2026-12-20"), certificates: L("يوس موحد – ثانوية", "Unified YÖS – High school", "Ortak YÖS – Lise"), link: "" }),
+      item({ university: L("جامعة حجة تبة", "Hacettepe University", "Hacettepe Üniversitesi"), city: L("أنقرة", "Ankara", "Ankara"), regStart: "2026-12-01", regEnd: "2026-12-20", results: L("2027-01-10", "2027-01-10", "2027-01-10"), certificates: L("يوس – سات – ثانوية", "YÖS – SAT – High school", "YÖS – SAT – Lise"), link: "" }),
+      item({ university: L("جامعة أنقرة", "Ankara University", "Ankara Üniversitesi"), city: L("أنقرة", "Ankara", "Ankara"), regStart: "2027-01-15", regEnd: "2027-02-15", results: L("2027-03-01", "2027-03-01", "2027-03-01"), certificates: L("يوس – ثانوية", "YÖS – High school", "YÖS – Lise"), link: "" }),
+      item({ university: L("جامعة إسطنبول التقنية", "Istanbul Technical University", "İstanbul Teknik Üniversitesi"), city: L("إسطنبول", "Istanbul", "İstanbul"), regStart: "2026-09-15", regEnd: "2026-10-15", results: L("2026-10-30", "2026-10-30", "2026-10-30"), certificates: L("سات – ثانوية", "SAT – High school", "SAT – Lise"), link: "" }),
     ],
 
     articles: [

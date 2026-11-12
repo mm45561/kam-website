@@ -49,13 +49,17 @@ export const SCHEMAS = {
     ],
   },
   calendar: {
-    title: "التقويم والمواعيد", single: "موعد", icon: "📅",
-    columns: (x, P) => [x.date || "—", P(x.title)],
-    headers: ["التاريخ", "الحدث"],
+    title: "التقويم ومواعيد التسجيل", single: "موعد تسجيل", icon: "📅",
+    columns: (x, P) => [P(x.university), P(x.city), x.regStart || "—", x.regEnd || "—"],
+    headers: ["الجامعة", "المدينة", "بدء التسجيل", "انتهاء التسجيل"],
     fields: [
-      { name: "title", label: "عنوان الموعد", type: "i18n", required: true },
-      { name: "date", label: "التاريخ", type: "date", required: true },
-      { name: "note", label: "ملاحظة", type: "i18n" },
+      { name: "university", label: "اسم الجامعة", type: "i18n", required: true },
+      { name: "city", label: "المدينة", type: "i18n" },
+      { name: "regStart", label: "بدء التسجيل", type: "date", required: true },
+      { name: "regEnd", label: "انتهاء التسجيل", type: "date", required: true, help: "اللون في الموقع يتغير تلقائياً: أخضر = التسجيل مفتوح اليوم، أبيض = يفتح قريباً، أحمر = انتهى." },
+      { name: "results", label: "تاريخ النتائج", type: "i18n", help: "اكتب التاريخ مثل 2026-11-20 أو نصاً مثل: بشكل دوري" },
+      { name: "certificates", label: "الشهادات المقبولة", type: "i18n", help: "مثال: يوس موحد – سات – ثانوية" },
+      { name: "link", label: "رابط التسجيل", type: "url", help: "اتركه فارغاً ليذهب الطالب إلى نموذج التسجيل في موقعنا." },
     ],
   },
   articles: {

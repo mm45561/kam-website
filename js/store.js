@@ -5,7 +5,7 @@ import { CONFIG } from "./config.js";
 import { SEED } from "./seed.js";
 
 export const IS_DEMO = !(CONFIG.supabaseUrl && CONFIG.supabaseAnonKey);
-const DEMO_KEY = "kam_demo_db_v1";
+const DEMO_KEY = "kam_demo_db_v2";
 const DEMO_PASSWORD = "kam-demo";
 
 let sb = null;

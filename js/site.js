@@ -245,14 +245,53 @@ async function pageScholarships() {
     <div class="row-gap">${s.deadline ? `<span class="price-pill">${t("deadline")}: ${fmtDate(s.deadline)}</span>` : ""}${s.link ? `<a class="link" href="${esc(s.link)}" target="_blank" rel="noopener">${t("official_link")} ↗</a>` : ""}<a class="btn btn-gold" href="#/apply">${t("apply_now")}</a></div></div>`).join("") || `<p class="empty">${t("no_results")}</p>`}</div></section>`;
 }
 
+const dmy = (d) => (/^\d{4}-\d{2}-\d{2}$/.test(d || "") ? d.split("-").reverse().join(".") : d || "");
+function calStatus(e, today) {
+  if (e.regEnd && e.regEnd < today) return "closed";
+  if (e.regStart && e.regStart > today) return "soon";
+  return "open";
+}
 async function pageCalendar() {
-  const list = [...(await col("calendar"))].sort((a, b) => String(a.date).localeCompare(String(b.date)));
   const today = new Date().toISOString().slice(0, 10);
-  const up = list.filter((e) => !e.date || e.date >= today), past = list.filter((e) => e.date && e.date < today).reverse();
-  const row = (e) => `<li><time>${fmtDate(e.date)}</time><div><h3>${esc(P(e.title))}</h3>${P(e.note) ? `<p>${esc(P(e.note))}</p>` : ""}</div></li>`;
-  return `${pageHead(t("nav_calendar"))}<section class="section"><div class="wrap narrow">
-    <h2>${t("upcoming")}</h2><ul class="timeline">${up.map(row).join("") || `<p class="empty">${t("no_results")}</p>`}</ul>
-    ${past.length ? `<h2 class="mt">${t("past")}</h2><ul class="timeline past">${past.map(row).join("")}</ul>` : ""}</div></section>`;
+  const order = { open: 0, soon: 1, closed: 2 };
+  const list = (await col("calendar")).map((e) => ({ ...e, st: calStatus(e, today) }))
+    .sort((a, b) => order[a.st] - order[b.st] || String(a.st === "closed" ? b.regEnd : a.regEnd || a.regStart).localeCompare(String(a.st === "closed" ? a.regEnd : b.regEnd || b.regStart)));
+  setTimeout(() => {
+    const q = document.getElementById("cq"), clr = document.getElementById("cclear"), sel = document.getElementById("cst");
+    const draw = () => {
+      const v = q.value.trim().toLowerCase();
+      let shown = 0;
+      document.querySelectorAll("#ctable tbody tr[data-s]").forEach((tr) => {
+        const ok = (!v || tr.dataset.s.includes(v)) && (!sel.value || tr.dataset.st === sel.value);
+        tr.hidden = !ok; if (ok) shown++;
+      });
+      document.getElementById("cempty").hidden = shown > 0;
+    };
+    q.addEventListener("input", draw); sel.addEventListener("change", draw);
+    clr.addEventListener("click", () => { q.value = ""; sel.value = ""; draw(); q.focus(); });
+    draw();
+  });
+  const rows = list.map((e) => {
+    const link = e.link || "#/apply";
+    const ext = /^https?:/.test(link);
+    return `<tr class="st-${e.st}" data-st="${e.st}" data-s="${esc([e.university?.ar, e.university?.en, e.university?.tr, e.city?.ar, e.city?.en, e.city?.tr].join(" ").toLowerCase())}">
+      <td data-l="${t("cal_university")}"><b>${esc(P(e.university))}</b><span class="st-badge">${t("cal_" + e.st)}</span></td>
+      <td data-l="${t("city")}">${esc(P(e.city))}</td>
+      <td data-l="${t("cal_start")}" dir="ltr">${esc(dmy(e.regStart)) || "—"}</td>
+      <td data-l="${t("cal_end")}" dir="ltr">${esc(dmy(e.regEnd)) || "—"}</td>
+      <td data-l="${t("cal_results")}">${esc(dmy(P(e.results))) || "—"}</td>
+      <td data-l="${t("cal_certs")}">${esc(P(e.certificates)) || "—"}</td>
+      <td class="cal-act"><a class="btn btn-reg" href="${esc(link)}"${ext ? ' target="_blank" rel="noopener"' : ""}>${t("cal_register")}</a></td></tr>`;
+  }).join("");
+  return `${pageHead(t("cal_title"), t("cal_sub"))}<section class="section"><div class="wrap">
+    <div class="cal-search card"><label for="cq">🔍 ${t("cal_search_label")}</label>
+      <div class="cal-search-row"><input id="cq" type="search" placeholder="${t("cal_search_ph")}">
+      <select id="cst"><option value="">${t("all")}</option><option value="open">${t("cal_open")}</option><option value="soon">${t("cal_soon")}</option><option value="closed">${t("cal_closed")}</option></select>
+      <button class="btn btn-clear" id="cclear" type="button">${t("cal_clear")}</button></div></div>
+    <div class="cal-legend"><span class="lg open">${t("cal_open")}</span><span class="lg soon">${t("cal_soon")}</span><span class="lg closed">${t("cal_closed")}</span></div>
+    <div class="cal-wrap"><table class="cal-table" id="ctable"><thead><tr><th>${t("cal_university")}</th><th>${t("city")}</th><th>${t("cal_start")}</th><th>${t("cal_end")}</th><th>${t("cal_results")}</th><th>${t("cal_certs")}</th><th>${t("cal_link")}</th></tr></thead>
+    <tbody>${rows}</tbody></table><p class="empty" id="cempty" hidden>${t("no_results")}</p></div>
+    <p class="note">${t("cal_note")}</p></div></section>${ctaBand()}`;
 }
 
 async function pageArticles(cat) {
