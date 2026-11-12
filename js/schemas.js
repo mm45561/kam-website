@@ -1,0 +1,113 @@
+// Field definitions for the admin panel editors.
+// type: text | i18n | i18n-long | long | number | select | image | bool | date | url
+const CUR = { name: "currency", label: "العملة", type: "select", options: [["", "الافتراضية (من الإعدادات)"], ["USD", "دولار USD"], ["EUR", "يورو EUR"], ["TRY", "ليرة تركية TRY"]] };
+
+export const SCHEMAS = {
+  universities: {
+    title: "الجامعات", single: "جامعة", icon: "🏛️",
+    columns: (x, P) => [P(x.name), x.type === "gov" ? "حكومية" : "خاصة", P(x.city), x.priceFrom ? "من " + x.priceFrom : "—"],
+    headers: ["الاسم", "النوع", "المدينة", "السعر"],
+    fields: [
+      { name: "type", label: "نوع الجامعة", type: "select", options: [["gov", "حكومية"], ["private", "خاصة"]], required: true },
+      { name: "name", label: "اسم الجامعة", type: "i18n", required: true },
+      { name: "city", label: "المدينة", type: "i18n" },
+      { name: "founded", label: "سنة التأسيس", type: "text" },
+      { name: "website", label: "الموقع الرسمي للجامعة", type: "url" },
+      { name: "image", label: "صورة أو شعار الجامعة", type: "image" },
+      { name: "description", label: "وصف الجامعة", type: "i18n-long" },
+      { name: "priceFrom", label: "السعر يبدأ من (سنوياً)", type: "number", help: "يظهر على بطاقة الجامعة. اتركه فارغاً للجامعات الحكومية." },
+      CUR,
+      { name: "fees", label: "جدول أسعار التخصصات", type: "long", rows: 8, dir: "auto",
+        help: "كل تخصص في سطر. الشكل: الاسم بالعربي | الاسم بالإنكليزي | الاسم بالتركي | السعر\nمثال: الطب | Medicine | Tıp | 25000\nأو باختصار: الطب | 25000" },
+      { name: "featured", label: "إظهارها في الصفحة الرئيسية", type: "bool" },
+    ],
+  },
+  services: {
+    title: "الخدمات والأسعار", single: "خدمة", icon: "💼",
+    columns: (x, P) => [(x.icon || "") + " " + P(x.title), P(x.priceLabel) || (x.price !== "" && x.price != null ? x.price : "—")],
+    headers: ["الخدمة", "السعر"],
+    fields: [
+      { name: "title", label: "اسم الخدمة", type: "i18n", required: true },
+      { name: "description", label: "وصف الخدمة", type: "i18n-long" },
+      { name: "icon", label: "أيقونة (إيموجي)", type: "text", help: "مثال: 🎓 ✈️ 📄 🪪" },
+      { name: "image", label: "صورة بدل الأيقونة (اختياري)", type: "image" },
+      { name: "price", label: "السعر", type: "number", help: "اكتب 0 لتظهر \"مجاناً\". اتركه فارغاً ليظهر \"اسأل عن السعر\"." },
+      CUR,
+      { name: "priceLabel", label: "نص بدل السعر (اختياري)", type: "i18n", help: "مثال: يبدأ من 100$ أو مجاناً للجامعات الخاصة. إذا كتبته يظهر بدل الرقم." },
+    ],
+  },
+  scholarships: {
+    title: "المنح", single: "منحة", icon: "🏅",
+    columns: (x, P) => [P(x.title), x.deadline || "—"],
+    headers: ["المنحة", "آخر موعد"],
+    fields: [
+      { name: "title", label: "اسم المنحة", type: "i18n", required: true },
+      { name: "body", label: "التفاصيل", type: "i18n-long" },
+      { name: "deadline", label: "آخر موعد للتقديم", type: "date" },
+      { name: "link", label: "الرابط الرسمي", type: "url" },
+      { name: "image", label: "صورة", type: "image" },
+    ],
+  },
+  calendar: {
+    title: "التقويم والمواعيد", single: "موعد", icon: "📅",
+    columns: (x, P) => [x.date || "—", P(x.title)],
+    headers: ["التاريخ", "الحدث"],
+    fields: [
+      { name: "title", label: "عنوان الموعد", type: "i18n", required: true },
+      { name: "date", label: "التاريخ", type: "date", required: true },
+      { name: "note", label: "ملاحظة", type: "i18n" },
+    ],
+  },
+  articles: {
+    title: "الأخبار والمقالات", single: "مقال", icon: "📰",
+    columns: (x, P) => [P(x.title), { news: "خبر", guide: "دليل", exams: "امتحانات", recognition: "اعتراف" }[x.category] || "", x.date || ""],
+    headers: ["العنوان", "التصنيف", "التاريخ"],
+    fields: [
+      { name: "category", label: "التصنيف", type: "select", options: [["news", "خبر (يظهر في الشريط المتحرك)"], ["guide", "دليل"], ["exams", "امتحانات"], ["recognition", "الاعتراف بالشهادات"]], required: true },
+      { name: "date", label: "التاريخ", type: "date" },
+      { name: "title", label: "العنوان", type: "i18n", required: true },
+      { name: "image", label: "صورة الغلاف", type: "image" },
+      { name: "body", label: "النص", type: "i18n-long", rows: 10, help: "اترك سطراً فارغاً بين الفقرات." },
+    ],
+  },
+  faqs: {
+    title: "الأسئلة الشائعة", single: "سؤال", icon: "❓",
+    columns: (x, P) => [P(x.q)],
+    headers: ["السؤال"],
+    fields: [
+      { name: "q", label: "السؤال", type: "i18n", required: true },
+      { name: "a", label: "الجواب", type: "i18n-long" },
+    ],
+  },
+};
+
+export const SETTINGS_FIELDS = [
+  { group: "الصفحة الرئيسية" },
+  { name: "siteName", label: "اسم الموقع (يظهر في عنوان المتصفح)", type: "i18n" },
+  { name: "tagline", label: "الشعار النصي", type: "i18n" },
+  { name: "heroTitle", label: "العنوان الكبير", type: "i18n" },
+  { name: "heroSubtitle", label: "النص تحت العنوان", type: "i18n-long" },
+  { name: "heroImage", label: "صورة خلفية (اختياري)", type: "image" },
+  { group: "من نحن" },
+  { name: "about", label: "نص من نحن", type: "i18n-long", rows: 6 },
+  { group: "معلومات التواصل" },
+  { name: "phones", label: "أرقام الهاتف (كل رقم في سطر)", type: "long", rows: 3, dir: "ltr" },
+  { name: "whatsapp", label: "رقم الواتساب (أرقام فقط مع رمز الدولة)", type: "text", dir: "ltr", help: "مثال: 905342990563" },
+  { name: "email", label: "البريد الإلكتروني", type: "text", dir: "ltr" },
+  { name: "address", label: "العنوان", type: "i18n" },
+  { name: "workingHours", label: "أوقات الدوام", type: "i18n" },
+  { name: "mapEmbed", label: "رابط خريطة Google (Embed)", type: "url", help: "من Google Maps: مشاركة ← تضمين خريطة ← انسخ الرابط الموجود داخل src فقط (يبدأ بـ https://www.google.com/maps/embed)" },
+  { group: "حسابات التواصل الاجتماعي" },
+  { name: "instagram", label: "Instagram", type: "url" },
+  { name: "facebook", label: "Facebook", type: "url" },
+  { name: "telegram", label: "Telegram", type: "url" },
+  { name: "linkedin", label: "LinkedIn", type: "url" },
+  { group: "الأسعار" },
+  { name: "currency", label: "العملة الافتراضية", type: "select", options: [["USD", "دولار USD"], ["EUR", "يورو EUR"], ["TRY", "ليرة تركية TRY"]] },
+  { name: "priceNote", label: "ملاحظة تحت جداول الأسعار", type: "i18n-long" },
+  { group: "الأرقام في الصفحة الرئيسية" },
+  { name: "stats", label: "الإحصائيات", type: "stats" },
+  { group: "معلومات الشركة القانونية" },
+  { name: "companyLegalName", label: "الاسم الرسمي للشركة", type: "text", help: "يظهر في أسفل الموقع وفي صفحة KVKK." },
+  { name: "taxNumber", label: "الرقم الضريبي", type: "text" },
+];
