@@ -1,7 +1,7 @@
-import * as Store from "./store.js";
-import { CONFIG } from "./config.js";
+import * as Store from "./store.js?v=202611121627";
+import { CONFIG } from "./config.js?v=202611121627";
 import { getLang, setLang, makeT, UI } from "./i18n.js";
-import { parseFees } from "./utils.js";
+import { parseFees } from "./utils.js?v=202611121627";
 
 const lang = getLang();
 const t = makeT(lang);

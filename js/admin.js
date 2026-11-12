@@ -1,7 +1,7 @@
-import * as Store from "./store.js";
-import { SCHEMAS, SETTINGS_FIELDS } from "./schemas.js";
-import { SEED } from "./seed.js";
-import { parseFees } from "./utils.js";
+import * as Store from "./store.js?v=202611121627";
+import { SCHEMAS, SETTINGS_FIELDS } from "./schemas.js?v=202611121627";
+import { SEED } from "./seed.js?v=202611121627";
+import { parseFees } from "./utils.js?v=202611121627";
 
 const LANGS = [["ar", "عربي"], ["en", "English"], ["tr", "Türkçe"]];
 const P = (o) => (o && typeof o === "object" ? o.ar || o.en || o.tr || "" : o ?? "");
@@ -268,7 +268,7 @@ async function viewCollection(view, key) {
     $("#crows").innerHTML = list.map((x) => `<tr data-id="${esc(x.id)}">
       <td class="w-ord"><button class="ord" data-dir="-1" title="لأعلى">▲</button><button class="ord" data-dir="1" title="لأسفل">▼</button></td>
       ${sc.columns(x, P).map((c, i) => `<td>${i === 0 ? `<b>${esc(c)}</b>` : esc(c)}</td>`).join("")}
-      <td><label class="switch"><input type="checkbox" class="pub" ${x.published !== false ? "checked" : ""}><span></span></label></td>
+      <td><label class="switch"><input type="checkbox" class="pub" ${x.published !== false ? "checked" : ""}><span></span><em></em></label></td>
       <td class="row-act"><button class="btn btn-small edit">تعديل</button><button class="btn btn-small btn-danger del">حذف</button></td></tr>`).join("") || `<tr><td colspan="9" class="muted">لا يوجد شيء بعد.</td></tr>`;
   };
   $("#cq").oninput = draw; draw();

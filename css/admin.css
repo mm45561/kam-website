@@ -74,11 +74,15 @@ textarea { resize: vertical; }
 .row-act { white-space: nowrap; display: flex; gap: 6px; justify-content: flex-end; }
 .pill { background: color-mix(in srgb, var(--c) 12%, white); color: var(--c); padding: 2px 10px; border-radius: 999px; font-size: .82rem; white-space: nowrap; }
 
-.switch { position: relative; display: inline-block; width: 42px; height: 24px; }
+.switch { position: relative; display: inline-flex; align-items: center; gap: 8px; padding-inline-start: 50px; height: 24px; cursor: pointer; }
 .switch input { opacity: 0; width: 0; height: 0; }
-.switch span { position: absolute; inset: 0; background: #ccc; border-radius: 999px; cursor: pointer; transition: .2s; }
+.switch span { position: absolute; inset-block: 0; inset-inline-start: 0; width: 42px; background: #d9d3cb; border-radius: 999px; cursor: pointer; transition: .2s; }
 .switch span::before { content: ""; position: absolute; width: 18px; height: 18px; top: 3px; inset-inline-start: 3px; background: #fff; border-radius: 50%; transition: .2s; }
-.switch input:checked + span { background: var(--green); }
+.switch input:checked + span { background: #1f8a4c; }
+.switch em { font-style: normal; font-size: .82rem; color: var(--muted); white-space: nowrap; }
+.switch em::after { content: "مخفي"; }
+.switch input:checked ~ em { color: #1f8a4c; }
+.switch input:checked ~ em::after { content: "ظاهر"; }
 .switch input:checked + span::before { transform: translateX(18px); }
 [dir=rtl] .switch input:checked + span::before { transform: translateX(-18px); }
 
