@@ -1,7 +1,7 @@
-import * as Store from "./store.js?v=202611121724";
-import { CONFIG } from "./config.js?v=202611121724";
+import * as Store from "./store.js?v=202611131734";
+import { CONFIG } from "./config.js?v=202611131734";
 import { getLang, setLang, makeT, UI } from "./i18n.js";
-import { parseFees } from "./utils.js?v=202611121724";
+import { parseFees } from "./utils.js?v=202611131734";
 
 const lang = getLang();
 const t = makeT(lang);
@@ -422,7 +422,7 @@ function bindApplyForm(unis, services) {
       await Store.submitApplication(app);
       f.hidden = true;
       document.getElementById("apply-done").hidden = false;
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (window.KAMMotion) window.KAMMotion.scrollTo(0); else window.scrollTo(0, 0);
     } catch (ex) {
       console.error(ex);
       err.textContent = t("send_error"); err.hidden = false;
@@ -498,7 +498,8 @@ async function route() {
   const h1 = app.querySelector("h1");
   document.title = (path === "/" ? "" : (h1 ? h1.textContent + " | " : "")) + (P(S.siteName) || "KAM");
   const sec = params.get("s") && document.getElementById("sec-" + params.get("s"));
-  if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (window.KAMMotion) window.KAMMotion.onPage({ target: sec || null });
+  else if (sec) sec.scrollIntoView({ block: "start" });
   else window.scrollTo(0, 0);
   if (path === "/prices") {
     const q = document.getElementById("pq");
