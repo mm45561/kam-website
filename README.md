@@ -47,9 +47,15 @@ js/i18n.js          interface texts (ar / en / tr)
 js/schemas.js       admin panel fields
 js/site.js          public site pages
 js/admin.js         admin panel
+js/motion.js        page animations (GSAP, ScrollTrigger, SplitText, Lenis)
+assets/vendor/      GSAP 3.13 and Lenis 1.3 (local copies, no CDN needed)
 supabase/schema.sql database tables and security rules
 assets/             logo and icons
 ```
+
+## Animations
+
+`js/motion.js` adds smooth scrolling (Lenis), section reveals on scroll (GSAP ScrollTrigger), a word-by-word headline (GSAP SplitText, split by words so Arabic letters stay joined) and a soft animated hero background. All of it is turned off for visitors whose device asks for reduced motion.
 
 ## Legal checklist (Türkiye)
 

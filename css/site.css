@@ -16,6 +16,7 @@
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body { margin: 0; font-family: var(--font); color: var(--ink); background: var(--ivory-2); line-height: 1.7; font-size: 16px; -webkit-font-smoothing: antialiased; }
 img { max-width: 100%; display: block; }
 a { color: var(--green); text-decoration: none; }
@@ -375,3 +376,14 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
   .uni-hero { min-height: 300px; }
   .uni-hero.has-img { min-height: 360px; }
 }
+
+/* motion (GSAP + Lenis) */
+html.lenis, html.lenis body { height: auto; }
+html.lenis { scroll-behavior: auto; }
+.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+.hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.motion .hero .hero-pattern { opacity: .5; }
+.hero-in, .hero .stats { z-index: 1; }
+.sw { will-change: transform; }
