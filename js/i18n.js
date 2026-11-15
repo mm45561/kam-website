@@ -1,5 +1,5 @@
 // Interface text in three languages. Content (universities, services...) is edited in the admin panel.
-import { CONFIG } from "./config.js?v=202611152340";
+import { CONFIG } from "./config.js?v=202611152345";
 
 export const UI = {
   ar: {
@@ -31,7 +31,7 @@ export const UI = {
     submit: "إرسال الطلب", sending: "جارٍ الإرسال…", sent_title: "تم استلام طلبك ✓", sent_text: "شكراً لك! سيتواصل معك أحد مستشارينا قريباً. يمكنك أيضاً مراسلتنا على واتساب.",
     send_error: "حدث خطأ، حاول مرة أخرى أو راسلنا على واتساب.", required: "هذا الحقل مطلوب",
     contact_title: "تواصل معنا", phones: "الهاتف", email: "البريد", address: "العنوان", hours: "أوقات الدوام", follow: "تابعنا",
-    privacy_title: "سياسة الخصوصية وحماية البيانات (KVKK)", footer_rights: "جميع الحقوق محفوظة", admin: "الإدارة",
+    privacy_title: "سياسة الخصوصية وحماية البيانات (KVKK)", footer_rights: "جميع الحقوق محفوظة", dev_credit: "تصميم وتطوير: م. محمد الشجاع", admin: "الإدارة",
     upcoming: "المواعيد القادمة", past: "مواعيد سابقة", not_found: "الصفحة غير موجودة", demo_banner: "نسخة تجريبية: البيانات محفوظة في هذا المتصفح فقط",
   },
   en: {
@@ -63,7 +63,7 @@ export const UI = {
     submit: "Send application", sending: "Sending…", sent_title: "Application received ✓", sent_text: "Thank you! One of our advisors will contact you soon. You can also message us on WhatsApp.",
     send_error: "Something went wrong. Please try again or message us on WhatsApp.", required: "This field is required",
     contact_title: "Contact us", phones: "Phone", email: "Email", address: "Address", hours: "Working hours", follow: "Follow us",
-    privacy_title: "Privacy & data protection notice (KVKK)", footer_rights: "All rights reserved", admin: "Admin",
+    privacy_title: "Privacy & data protection notice (KVKK)", footer_rights: "All rights reserved", dev_credit: "Designed & developed by Eng. Mohammed Alshujaa", admin: "Admin",
     upcoming: "Upcoming dates", past: "Past dates", not_found: "Page not found", demo_banner: "Demo version: data is saved in this browser only",
   },
   tr: {
@@ -95,7 +95,7 @@ export const UI = {
     submit: "Başvuruyu gönder", sending: "Gönderiliyor…", sent_title: "Başvurunuz alındı ✓", sent_text: "Teşekkürler! Danışmanlarımızdan biri en kısa sürede size ulaşacak. WhatsApp'tan da yazabilirsiniz.",
     send_error: "Bir hata oluştu. Lütfen tekrar deneyin veya WhatsApp'tan yazın.", required: "Bu alan zorunludur",
     contact_title: "İletişim", phones: "Telefon", email: "E-posta", address: "Adres", hours: "Çalışma saatleri", follow: "Bizi takip edin",
-    privacy_title: "Gizlilik ve KVKK aydınlatma metni", footer_rights: "Tüm hakları saklıdır", admin: "Yönetim",
+    privacy_title: "Gizlilik ve KVKK aydınlatma metni", footer_rights: "Tüm hakları saklıdır", dev_credit: "Tasarım ve geliştirme: Müh. Mohammed Alshujaa", admin: "Yönetim",
     upcoming: "Yaklaşan tarihler", past: "Geçmiş tarihler", not_found: "Sayfa bulunamadı", demo_banner: "Deneme sürümü: veriler yalnızca bu tarayıcıda saklanır",
   },
 };
