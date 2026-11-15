@@ -420,3 +420,10 @@ html.lenis { scroll-behavior: auto; }
 .price-block h2 { margin: 0; color: var(--green); font-size: 1.15rem; }
 .contact-list h2 { color: var(--green); font-size: 1rem; margin-bottom: 4px; }
 .prose h2.ph { font-size: 1.1rem; }
+
+/* logo mark also on phones (spins on the home page) */
+.hero-mark img { transform-origin: 50% 50%; }
+@media (max-width: 860px) {
+  .hero-mark { display: flex; order: -1; justify-content: flex-start; }
+  .hero-mark img { width: 120px; }
+}

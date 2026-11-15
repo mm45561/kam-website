@@ -93,10 +93,13 @@
         .from(words, { yPercent: 60, autoAlpha: 0, duration: 0.8, stagger: 0.07 }, "-=0.3")
         .from(hero.querySelector(".lead"), { y: 16, autoAlpha: 0, duration: 0.7 }, "-=0.45")
         .from(hero.querySelectorAll(".hero-actions .btn"), { y: 14, autoAlpha: 0, duration: 0.6, stagger: 0.1 }, "-=0.4")
-        .from(hero.querySelector(".hero-mark img"), { scale: 0.85, rotate: -8, autoAlpha: 0, duration: 1.2 }, 0.2)
         .from(hero.querySelectorAll(".stat"), { y: 20, autoAlpha: 0, duration: 0.6, stagger: 0.08 }, "-=0.6");
       const mark = hero.querySelector(".hero-mark img");
-      if (mark) gsap.to(mark, { y: -12, rotate: 2, duration: 4, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 1.4 });
+      if (mark) {
+        // Logo spins fast, then slows down until it stops (every time the home page is opened)
+        gsap.fromTo(mark, { rotate: -1800, scale: 0.6, autoAlpha: 0 }, { rotate: 0, scale: 1, autoAlpha: 1, duration: 3.2, ease: "expo.out", delay: 0.1 });
+        gsap.to(mark, { y: -12, duration: 4, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 3.3 });
+      }
       countUp(hero.querySelectorAll(".stat b"));
       heroBg = startHeroBg(hero);
       // gentle parallax as the hero scrolls away

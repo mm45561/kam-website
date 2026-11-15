@@ -1,8 +1,8 @@
 // Data layer. Works in two modes:
 //  - Supabase mode (when config.js has a URL + key): real database, shared by everyone.
 //  - Demo mode: everything is saved in this browser's localStorage, seeded with sample data.
-import { CONFIG } from "./config.js?v=202611151955";
-import { SEED } from "./seed.js?v=202611151955";
+import { CONFIG } from "./config.js?v=202611152048";
+import { SEED } from "./seed.js?v=202611152048";
 
 export const IS_DEMO = !(CONFIG.supabaseUrl && CONFIG.supabaseAnonKey);
 const DEMO_KEY = "kam_demo_db_v4";
