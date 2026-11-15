@@ -1,7 +1,7 @@
-import * as Store from "./store.js?v=202611151955";
-import { SCHEMAS, SETTINGS_FIELDS } from "./schemas.js?v=202611151955";
-import { SEED } from "./seed.js?v=202611151955";
-import { parseFees } from "./utils.js?v=202611151955";
+import * as Store from "./store.js?v=202611152100";
+import { SCHEMAS, SETTINGS_FIELDS } from "./schemas.js?v=202611152100";
+import { SEED } from "./seed.js?v=202611152100";
+import { parseFees } from "./utils.js?v=202611152100";
 
 const LANGS = [["ar", "عربي"], ["en", "English"], ["tr", "Türkçe"]];
 const P = (o) => (o && typeof o === "object" ? o.ar || o.en || o.tr || "" : o ?? "");
@@ -55,9 +55,58 @@ const VIEWS = [
   ["settings", "⚙️", "إعدادات الموقع"],
   ["help", "❔", "طريقة الاستخدام"],
 ];
+// ---------------- two-step login (authenticator app) ----------------
+async function showMfa(mode) {
+  let enroll = null;
+  if (mode === "enroll") {
+    try { enroll = await Store.mfaEnroll(); } catch (e) { console.error(e); }
+  }
+  root.innerHTML = `<div class="login-wrap"><form class="login card" id="mfa">
+    <img src="assets/logo-ar.png" alt="KAM" class="login-logo">
+    <h1>التحقق بخطوتين</h1>
+    ${mode === "enroll" ? `<p class="muted">لحماية لوحة الإدارة، أضف هذا الحساب إلى تطبيق مصادقة على هاتفك (Google Authenticator أو Microsoft Authenticator): افتح التطبيق، اضغط +، ثم امسح الرمز.</p>
+      ${enroll ? `<img class="mfa-qr" alt="QR" src="${esc(enroll.qr)}"><p class="muted small">أو اكتب هذا المفتاح يدوياً:</p><code class="mfa-secret" dir="ltr">${esc(enroll.secret)}</code>` : `<p class="err">تعذّر إنشاء الرمز. حدّث الصفحة وحاول مرة أخرى.</p>`}` :
+      `<p class="muted">افتح تطبيق المصادقة على هاتفك واكتب الرمز المكوّن من 6 أرقام.</p>`}
+    <label>الرمز<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" dir="ltr" required></label>
+    <p class="err" hidden></p>
+    <button class="btn btn-primary btn-block">تأكيد</button>
+    <button type="button" class="linkbtn back-link" id="mfa-out">تسجيل الخروج</button>
+  </form></div>`;
+  $("#mfa-out").onclick = async () => { await Store.signOut(); showLogin(); };
+  $("#mfa").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = e.target, err = $(".err", f);
+    err.hidden = true;
+    try {
+      await Store.mfaVerify(f.code.value, enroll?.factorId);
+      start();
+    } catch (ex) {
+      err.textContent = "الرمز غير صحيح أو انتهت صلاحيته. جرّب الرمز الجديد.";
+      err.hidden = false;
+    }
+  });
+}
+
+// Sign out automatically after 30 minutes without any activity in the admin panel.
+const IDLE_MS = 30 * 60 * 1000;
+let idleTimer = null, idleArmed = false;
+function armIdleLogout() {
+  if (Store.IS_DEMO || idleArmed) return;
+  idleArmed = true;
+  const reset = () => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(async () => { await Store.signOut(); location.hash = ""; showLogin(); }, IDLE_MS);
+  };
+  ["click", "keydown", "pointermove", "scroll"].forEach((ev) => window.addEventListener(ev, reset, { passive: true }));
+  reset();
+}
+
 async function start() {
   const user = await Store.currentUser();
   if (!user) return showLogin();
+  const mfa = await Store.mfaStatus();
+  if (mfa !== "ok") return showMfa(mfa);
+  armIdleLogout();
   root.innerHTML = `
   <div class="layout">
     <aside class="side"><img src="assets/logo-light.png" class="side-logo" alt="KAM">
@@ -145,11 +194,17 @@ async function viewApplications(view) {
   $("#aq").oninput = draw; $("#ast").onchange = draw; draw();
   $("#csv").onclick = () => {
     const cols = ["created_at", "status", "name", "phone", "email", "nationality", "country", "degree", "major", "gpa", "unitype", "university", "service", "message", "notes"];
-    const csv = "﻿" + [cols.join(","), ...apps.map((a) => cols.map((c) => `"${String(a[c] ?? "").replace(/"/g, '""')}"`).join(","))].join("\n");
+    const csv = "﻿" + [cols.join(","), ...apps.map((a) => cols.map((c) => csvCell(a[c])).join(","))].join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const link = Object.assign(document.createElement("a"), { href: url, download: `kam-applications-${new Date().toISOString().slice(0, 10)}.csv` });
     link.click(); URL.revokeObjectURL(url);
   };
+}
+// Quote a CSV cell. A leading = + - @ is neutralised so Excel never runs a student's text as a formula.
+function csvCell(v) {
+  let x = String(v ?? "");
+  if (/^[=+\-@\t\r]/.test(x)) x = "'" + x;
+  return `"${x.replace(/"/g, '""')}"`;
 }
 function openApp(a) {
   if (!a) return;
