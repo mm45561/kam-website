@@ -1,8 +1,8 @@
 // Data layer. Works in two modes:
 //  - Supabase mode (when config.js has a URL + key): real database, shared by everyone.
 //  - Demo mode: everything is saved in this browser's localStorage, seeded with sample data.
-import { CONFIG } from "./config.js?v=202611152048";
-import { SEED } from "./seed.js?v=202611152048";
+import { CONFIG } from "./config.js?v=202611152110";
+import { SEED } from "./seed.js?v=202611152110";
 
 export const IS_DEMO = !(CONFIG.supabaseUrl && CONFIG.supabaseAnonKey);
 const DEMO_KEY = "kam_demo_db_v4";
@@ -12,8 +12,14 @@ let sb = null;
 async function client() {
   if (IS_DEMO) return null;
   if (!sb) {
-    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm");
-    sb = createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
+    // Local copy of supabase-js (assets/vendor), so no third-party CDN can change the code that runs here.
+    if (!window.supabase) {
+      await new Promise((resolve, reject) => {
+        const el = Object.assign(document.createElement("script"), { src: "assets/vendor/supabase.min.js", onload: resolve, onerror: reject });
+        document.head.appendChild(el);
+      });
+    }
+    sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
   }
   return sb;
 }
@@ -140,8 +146,8 @@ export async function submitApplication(app) {
     return;
   }
   const c = await client();
-  // Insert only: the public is not allowed to read applications back.
-  const { error } = await c.from("applications").insert({ data: app, status: "new" });
+  // Insert only the "data" column: the public may not set any other column or read applications back.
+  const { error } = await c.from("applications").insert({ data: app });
   if (error) throw error;
 }
 export async function listApplications() {
@@ -237,3 +243,36 @@ export async function changePassword(newPassword) {
   if (error) throw error;
 }
 export const DEMO_HINT = DEMO_PASSWORD;
+
+// ---------- two-step login (authenticator app) ----------
+// The database only lets an admin in after the 6-digit code step (session level "aal2").
+// Returns "ok" (done), "verify" (has an authenticator, needs the code) or "enroll" (must add one first).
+export async function mfaStatus() {
+  if (IS_DEMO) return "ok";
+  const c = await client();
+  const { data, error } = await c.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (error) throw error;
+  if (data.currentLevel === "aal2") return "ok";
+  return data.nextLevel === "aal2" ? "verify" : "enroll";
+}
+async function verifiedTotp(c) {
+  const { data, error } = await c.auth.mfa.listFactors();
+  if (error) throw error;
+  return data.totp.find((f) => f.status === "verified") || null;
+}
+export async function mfaEnroll() {
+  const c = await client();
+  // Remove unfinished enrollments from earlier attempts.
+  const { data: list } = await c.auth.mfa.listFactors();
+  for (const f of (list?.all || []).filter((x) => x.status !== "verified")) await c.auth.mfa.unenroll({ factorId: f.id });
+  const { data, error } = await c.auth.mfa.enroll({ factorType: "totp", friendlyName: "KAM admin " + Date.now() });
+  if (error) throw error;
+  return { factorId: data.id, qr: data.totp.qr_code, secret: data.totp.secret };
+}
+export async function mfaVerify(code, factorId) {
+  const c = await client();
+  const id = factorId || (await verifiedTotp(c))?.id;
+  if (!id) throw new Error("no-factor");
+  const { error } = await c.auth.mfa.challengeAndVerify({ factorId: id, code: String(code).replace(/\s/g, "") });
+  if (error) throw error;
+}

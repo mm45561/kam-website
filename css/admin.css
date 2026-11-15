@@ -133,3 +133,5 @@ fieldset.i18n label { display: grid; grid-template-columns: 70px 1fr; gap: 10px;
   .dl { grid-template-columns: 1fr; }
   .dl dt { margin-top: 6px; }
 }
+.mfa-qr { width: 200px; height: 200px; margin: 0 auto; background: #fff; padding: 8px; border-radius: 8px; }
+.mfa-secret { display: block; text-align: center; word-break: break-all; font-size: 13px; padding: 8px; background: rgba(0,0,0,.05); border-radius: 6px; }
