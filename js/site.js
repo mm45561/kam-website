@@ -1,7 +1,7 @@
-import * as Store from "./store.js?v=202611152155";
-import { CONFIG } from "./config.js?v=202611152155";
+import * as Store from "./store.js?v=202611152340";
+import { CONFIG } from "./config.js?v=202611152340";
 import { getLang, setLang, makeT, UI } from "./i18n.js";
-import { parseFees } from "./utils.js?v=202611152155";
+import { parseFees } from "./utils.js?v=202611152340";
 
 const lang = getLang();
 const t = makeT(lang);
@@ -117,7 +117,7 @@ function renderShell() {
       <div><h2 class="f-h">KAM</h2><a href="#/services">${t("nav_services")}</a><a href="#/articles">${t("nav_articles")}</a><a href="#/about">${t("nav_about")}</a><a href="#/search">${t("search_title")}</a><a href="#/privacy">KVKK</a></div>
       <div><h2 class="f-h">${t("contact_title")}</h2>${String(S.phones || "").split("\n").filter(Boolean).map((p) => `<a href="tel:${esc(p.replace(/\s/g, ""))}" dir="ltr">${esc(p)}</a>`).join("")}${S.email ? `<a href="mailto:${esc(S.email)}">${esc(S.email)}</a>` : ""}<span>${esc(P(S.address))}</span></div>
     </div>
-    <div class="wrap footer-bottom"><span>© ${new Date().getFullYear()} ${esc(S.companyLegalName || "KAM")}. ${t("footer_rights")}.</span><a href="admin.html">${t("admin")}</a></div>`;
+    <div class="wrap footer-bottom"><span>© ${new Date().getFullYear()} ${esc(S.companyLegalName || "KAM")}. ${t("footer_rights")}.</span></div>`;
   const fab = document.getElementById("wa-fab");
   fab.href = waLink();
   fab.innerHTML = icons.wa;
