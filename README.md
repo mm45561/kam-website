@@ -44,6 +44,8 @@ Custom domain (later): in the Pages project open *Custom domains*, add the domai
 | Browser | No third-party scripts: Supabase, GSAP and Lenis are local copies in `assets/vendor`. Content Security Policy allows scripts only from the site itself. Admin-entered links are limited to http, https, mailto and tel. |
 | Excel export | Cells that start with `=`, `+`, `-` or `@` are neutralised so a student's text can never run as a formula. |
 
+The free Supabase plan pauses a project after 7 days without visits. `.github/workflows/keep-alive.yml` reads the public settings row every 3 days with the public anon key, the same request any visitor makes, so it never sees student data. GitHub turns scheduled workflows off after 60 days without commits: if that happens, open *Actions → Keep database awake → Enable workflow*.
+
 Accounts to protect with two-step login: GitHub, Supabase, Cloudflare and the office email.
 
 ## Files
