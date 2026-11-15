@@ -1,7 +1,7 @@
-import * as Store from "./store.js?v=202611152110";
-import { SCHEMAS, SETTINGS_FIELDS } from "./schemas.js?v=202611152110";
-import { SEED } from "./seed.js?v=202611152110";
-import { parseFees } from "./utils.js?v=202611152110";
+import * as Store from "./store.js?v=202611152155";
+import { SCHEMAS, SETTINGS_FIELDS } from "./schemas.js?v=202611152155";
+import { SEED } from "./seed.js?v=202611152155";
+import { parseFees } from "./utils.js?v=202611152155";
 
 const LANGS = [["ar", "عربي"], ["en", "English"], ["tr", "Türkçe"]];
 const P = (o) => (o && typeof o === "object" ? o.ar || o.en || o.tr || "" : o ?? "");
