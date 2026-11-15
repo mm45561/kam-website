@@ -1,0 +1,6 @@
+# Repository files that are not part of the website: send visitors to the home page.
+/README.md        /  301
+/supabase/*       /  301
+/.github/*        /  301
+/_headers         /  301
+/_redirects       /  301
