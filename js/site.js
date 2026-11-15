@@ -1,7 +1,7 @@
-import * as Store from "./store.js?v=202611151955";
-import { CONFIG } from "./config.js?v=202611151955";
+import * as Store from "./store.js?v=202611152100";
+import { CONFIG } from "./config.js?v=202611152100";
 import { getLang, setLang, makeT, UI } from "./i18n.js";
-import { parseFees } from "./utils.js?v=202611151955";
+import { parseFees } from "./utils.js?v=202611152100";
 
 const lang = getLang();
 const t = makeT(lang);
@@ -19,6 +19,14 @@ async function col(name) {
 
 // ---------- helpers ----------
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Links and images typed in the admin panel: only web, mail and phone links are allowed (never "javascript:").
+const safeUrl = (u) => {
+  const x = String(u ?? "").trim();
+  if (!x) return "#";
+  const m = /^([a-z][a-z0-9+.-]*):/i.exec(x);
+  if (m && !["http", "https", "mailto", "tel"].includes(m[1].toLowerCase()) && !/^data:image\/(png|jpe?g|webp|gif);/i.test(x)) return "#";
+  return esc(x);
+};
 const paras = (s) => esc(s).split(/\n\s*\n/).map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
 const fmtDate = (d) => {
   if (!d) return "";
@@ -35,7 +43,7 @@ const money = (v, cur) => {
 const waLink = (text = "") => S.whatsapp ? `https://wa.me/${String(S.whatsapp).replace(/\D/g, "")}${text ? "?text=" + encodeURIComponent(text) : ""}` : "#/contact";
 function uniThumb(u) {
   return u.image
-    ? `<img src="${esc(u.image)}" alt="" loading="lazy">`
+    ? `<img src="${safeUrl(u.image)}" alt="" loading="lazy">`
     : `<div class="thumb-ph"><img src="assets/mark-light.webp" alt=""></div>`;
 }
 
@@ -54,7 +62,7 @@ const icons = {
 };
 function socials() {
   const list = [["instagram", icons.ig], ["facebook", icons.fb], ["telegram", icons.tg], ["linkedin", icons.li]];
-  return list.filter(([k]) => S[k]).map(([k, ic]) => `<a href="${esc(S[k])}" target="_blank" rel="noopener" aria-label="${k}">${ic}</a>`).join("");
+  return list.filter(([k]) => S[k]).map(([k, ic]) => `<a href="${safeUrl(S[k])}" target="_blank" rel="noopener" aria-label="${k}">${ic}</a>`).join("");
 }
 
 function shareBar(title) {
@@ -152,14 +160,14 @@ function uniCard(u) {
 }
 function serviceCard(s) {
   const price = P(s.priceLabel) || (s.price !== "" && s.price != null ? money(s.price, s.currency) : "");
-  return `<div class="card service-card"><div class="svc-icon">${s.image ? `<img src="${esc(s.image)}" alt="">` : esc(s.icon || "★")}</div>
+  return `<div class="card service-card"><div class="svc-icon">${s.image ? `<img src="${safeUrl(s.image)}" alt="">` : esc(s.icon || "★")}</div>
     <h3>${esc(P(s.title))}</h3><p>${esc(P(s.description))}</p>
     <div class="svc-foot">${price ? `<span class="price-pill">${esc(price)}</span>` : `<span class="price-pill muted">${t("ask_price")}</span>`}
     <a class="link" href="#/apply?service=${encodeURIComponent(s.id)}">${t("apply_now")}</a></div></div>`;
 }
 function articleCard(a) {
   return `<a class="card article-card" href="#/article/${esc(a.id)}">
-    ${a.image ? `<div class="thumb"><img src="${esc(a.image)}" alt="" loading="lazy"></div>` : ""}
+    ${a.image ? `<div class="thumb"><img src="${safeUrl(a.image)}" alt="" loading="lazy"></div>` : ""}
     <div class="card-body"><span class="cat">${t("cat_" + (a.category || "news"))}</span><h3>${esc(P(a.title))}</h3><p class="meta">${fmtDate(a.date)}</p></div></a>`;
 }
 const sectionHead = (title, sub, link) => `<div class="sec-head"><div><h2>${title}</h2>${sub ? `<p>${sub}</p>` : ""}</div>${link ? `<a class="link" href="${link}">${t("view_all")}</a>` : ""}</div>`;
@@ -256,7 +264,7 @@ async function pageUniversity(id) {
     ${u.cover ? "" : '<div class="hero-pattern" aria-hidden="true"></div><img class="uni-hero-mark" src="assets/mark-light.webp" alt="">'}
     <div class="wrap uni-hero-in">
       <nav class="crumbs" aria-label="${t("breadcrumb")}"><a href="#/">${t("nav_home")}</a> / <a href="#/universities/${u.type}">${t(u.type === "gov" ? "nav_gov" : "nav_private")}</a></nav>
-      <div class="uni-hero-title">${u.image ? `<div class="uni-logo"><img src="${esc(u.image)}" alt=""></div>` : ""}
+      <div class="uni-hero-title">${u.image ? `<div class="uni-logo"><img src="${safeUrl(u.image)}" alt=""></div>` : ""}
         <div><span class="tag ${u.type}">${t(u.type === "gov" ? "nav_gov" : "nav_private")}</span>
         <h1>${esc(P(u.name))}${otherName && otherName !== P(u.name) ? ` <span class="alt-name" dir="ltr">${esc(otherName)}</span>` : ""}</h1>
         <p>${esc(P(u.city))}${u.founded ? ` · ${t("founded")} ${esc(u.founded)}` : ""}</p></div></div>
@@ -272,12 +280,12 @@ async function pageUniversity(id) {
         ${u.type === "private" && u.priceFrom ? `<p class="price big">${t("price_from")} <b>${money(u.priceFrom, u.currency)}</b> <small>${t("per_year")}</small></p>` : ""}
         ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
         <a href="#/apply?university=${encodeURIComponent(u.id)}" class="btn btn-gold btn-block">${t("apply_now")}</a>
-        ${u.website ? `<a href="${esc(u.website)}" target="_blank" rel="noopener" class="link">${t("website")} ↗</a>` : ""}
+        ${u.website ? `<a href="${safeUrl(u.website)}" target="_blank" rel="noopener" class="link">${t("website")} ↗</a>` : ""}
       </div>
       <div class="side-card contact-box">
         <h3>${t("uni_help")}</h3><p>${t("uni_help_text")}</p>
         ${S.whatsapp ? `<a href="${waLink(P(u.name))}" target="_blank" rel="noopener" class="btn btn-wa btn-block">${icons.wa} WhatsApp</a>` : ""}
-        ${S.telegram ? `<a href="${esc(S.telegram)}" target="_blank" rel="noopener" class="btn btn-tg btn-block">${icons.tg} ${t("uni_telegram")}</a>` : ""}
+        ${S.telegram ? `<a href="${safeUrl(S.telegram)}" target="_blank" rel="noopener" class="btn btn-tg btn-block">${icons.tg} ${t("uni_telegram")}</a>` : ""}
       </div>
     </div></div></section>
   ${relatedUnis.length ? `<section class="section alt"><div class="wrap">${sectionHead(t("related_unis"), "", "#/universities/" + u.type)}<div class="grid g4">${relatedUnis.map(uniCard).join("")}</div></div></section>` : ""}`;
@@ -305,8 +313,8 @@ async function pageServices() {
 async function pageScholarships() {
   const list = await col("scholarships");
   return `${pageHead(t("nav_scholarships"))}<section class="section"><div class="wrap narrow">${list.map((s) => `
-    <div class="card sch-full">${s.image ? `<img src="${esc(s.image)}" alt="" class="sch-img">` : ""}<h2>🏅 ${esc(P(s.title))}</h2>${paras(P(s.body))}
-    <div class="row-gap">${s.deadline ? `<span class="price-pill">${t("deadline")}: ${fmtDate(s.deadline)}</span>` : ""}${s.link ? `<a class="link" href="${esc(s.link)}" target="_blank" rel="noopener">${t("official_link")} ↗</a>` : ""}<a class="btn btn-gold" href="#/apply">${t("apply_now")}</a></div></div>`).join("") || `<p class="empty">${t("no_results")}</p>`}</div></section>`;
+    <div class="card sch-full">${s.image ? `<img src="${safeUrl(s.image)}" alt="" class="sch-img">` : ""}<h2>🏅 ${esc(P(s.title))}</h2>${paras(P(s.body))}
+    <div class="row-gap">${s.deadline ? `<span class="price-pill">${t("deadline")}: ${fmtDate(s.deadline)}</span>` : ""}${s.link ? `<a class="link" href="${safeUrl(s.link)}" target="_blank" rel="noopener">${t("official_link")} ↗</a>` : ""}<a class="btn btn-gold" href="#/apply">${t("apply_now")}</a></div></div>`).join("") || `<p class="empty">${t("no_results")}</p>`}</div></section>`;
 }
 
 const dmy = (d) => (/^\d{4}-\d{2}-\d{2}$/.test(d || "") ? d.split("-").reverse().join(".") : d || "");
@@ -349,7 +357,7 @@ async function pageCalendar(level) {
       <td data-l="${t("cal_end")}" dir="ltr">${esc(dmy(e.regEnd)) || "—"}</td>
       <td data-l="${t("cal_results")}">${esc(dmy(P(e.results))) || "—"}</td>
       <td data-l="${t("cal_certs")}">${esc(P(e.certificates)) || "—"}</td>
-      <td class="cal-act"><a class="btn btn-reg" href="${esc(link)}"${ext ? ' target="_blank" rel="noopener"' : ""}>${t("cal_register")}</a></td></tr>`;
+      <td class="cal-act"><a class="btn btn-reg" href="${safeUrl(link)}"${ext ? ' target="_blank" rel="noopener"' : ""}>${t("cal_register")}</a></td></tr>`;
   }).join("");
   return `${pageHead(t("cal_title"), t("cal_sub"))}<section class="section"><div class="wrap">
     <div class="cal-search card"><label for="cq">🔍 ${t("cal_search_label")}</label>
@@ -377,7 +385,7 @@ async function pageArticle(id) {
   if (!a) return notFound();
   const related = (await col("articles")).filter((x) => x.id !== a.id && x.category === a.category).slice(0, 4);
   return `${pageHead(esc(P(a.title)), `${t("cat_" + (a.category || "news"))} · ${fmtDate(a.date)}`)}
-  <section class="section"><div class="wrap narrow"><div class="prose">${a.image ? `<img src="${esc(a.image)}" alt="" class="article-img">` : ""}${paras(P(a.body))}</div>
+  <section class="section"><div class="wrap narrow"><div class="prose">${a.image ? `<img src="${safeUrl(a.image)}" alt="" class="article-img">` : ""}${paras(P(a.body))}</div>
   ${updatedLine(a)}${shareBar(P(a.title))}
   <p class="mt"><a href="#/articles/${esc(a.category || "")}" class="link">${t("back")}</a></p></div></section>
   ${related.length ? `<section class="section alt"><div class="wrap">${sectionHead(t("related_articles"))}<div class="grid g4">${related.map(articleCard).join("")}</div></div></section>` : ""}${ctaBand()}`;
@@ -400,7 +408,7 @@ async function pageContact() {
       ${P(S.workingHours) ? `<div><h2>${t("hours")}</h2><p>${esc(P(S.workingHours))}</p></div>` : ""}
       <div><h2>${t("follow")}</h2><div class="footer-social dark">${socials()}</div></div>
     </div>
-    <div>${S.mapEmbed && /^https:\/\/(www\.)?google\.[a-z.]+\/maps\/embed/.test(S.mapEmbed) ? `<iframe class="map" src="${esc(S.mapEmbed)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="map"></iframe>` : `<div class="side-card center"><img src="assets/mark.webp" alt="" style="width:120px"></div>`}</div>
+    <div>${S.mapEmbed && /^https:\/\/www\.google\.com\/maps\/embed\?/.test(S.mapEmbed) ? `<iframe class="map" src="${esc(S.mapEmbed)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="map"></iframe>` : `<div class="side-card center"><img src="assets/mark.webp" alt="" style="width:120px"></div>`}</div>
   </div></section>`;
 }
 
@@ -478,24 +486,24 @@ function pagePrivacy() {
   const contact = [S.email, String(S.phones || "").split("\n")[0]].filter(Boolean).map(esc).join(" · ");
   const body = {
     ar: `<p>يوضح هذا النص كيف يعالج ${co} ("المكتب") بياناتك الشخصية وفقاً لقانون حماية البيانات الشخصية التركي رقم 6698 (KVKK).</p>
-      <h2 class="ph">١. البيانات التي نجمعها</h2><p>الاسم، رقم الهاتف، البريد الإلكتروني، الجنسية وبلد الإقامة، المعلومات الدراسية (المرحلة، التخصص، المعدل، الجامعة المفضلة) وأي ملاحظات ترسلها لنا عبر نموذج التسجيل.</p>
+      <h2 class="ph">١. البيانات التي نجمعها</h2><p>الاسم، رقم الهاتف، البريد الإلكتروني، الجنسية وبلد الإقامة، المعلومات الدراسية (المرحلة، التخصص، المعدل، الجامعة المفضلة) وأي ملاحظات ترسلها لنا عبر نموذج التسجيل. ولحماية النموذج من الرسائل المزعجة نحفظ رمزاً مشفّراً لا يمكن عكسه مشتقاً من عنوان الإنترنت (IP)، ولا نحفظ العنوان نفسه.</p>
       <h2 class="ph">٢. سبب المعالجة</h2><p>للتواصل معك بخصوص طلبك، وتقديم الاستشارة، والتقديم على الجامعات والخدمات التي تطلبها، وتنفيذ الالتزامات القانونية.</p>
       <h2 class="ph">٣. الأساس القانوني</h2><p>موافقتك الصريحة، وضرورة المعالجة لإبرام العقد وتنفيذه (المادة 5 من القانون).</p>
-      <h2 class="ph">٤. نقل البيانات</h2><p>تُنقل بياناتك فقط إلى الجامعات والجهات الرسمية التي تطلب التقديم عليها، وإلى مزودي الخدمات التقنية الذين نستخدمهم لحفظ البيانات، وبالقدر اللازم فقط.</p>
+      <h2 class="ph">٤. نقل البيانات</h2><p>تُنقل بياناتك فقط إلى الجامعات والجهات الرسمية التي تطلب التقديم عليها، وإلى مزودي الخدمات التقنية الذين نستخدمهم لحفظ البيانات، وبالقدر اللازم فقط. تُحفظ البيانات على خوادم داخل الاتحاد الأوروبي (ألمانيا).</p>
       <h2 class="ph">٥. مدة الحفظ</h2><p>نحفظ بياناتك طوال فترة تقديم الخدمة والمدة التي يفرضها القانون، ثم نحذفها أو نجعلها مجهولة الهوية.</p>
       <h2 class="ph">٦. حقوقك</h2><p>يحق لك وفق المادة 11 معرفة ما إذا كانت بياناتك تُعالج، وطلب معلومات عنها، وتصحيحها أو حذفها، والاعتراض على معالجتها. للتواصل: ${contact}</p>`,
     en: `<p>This notice explains how ${co} ("the Office") processes your personal data under Turkish Personal Data Protection Law No. 6698 (KVKK).</p>
-      <h2 class="ph">1. Data we collect</h2><p>Name, phone number, email, nationality and country of residence, education details (degree level, program, grade, preferred university) and any notes you send through the application form.</p>
+      <h2 class="ph">1. Data we collect</h2><p>Name, phone number, email, nationality and country of residence, education details (degree level, program, grade, preferred university) and any notes you send through the application form. To protect the form from spam we keep a one-way encrypted code derived from your internet (IP) address, never the address itself.</p>
       <h2 class="ph">2. Purpose</h2><p>To contact you about your application, provide advice, apply to the universities and services you request, and meet legal obligations.</p>
       <h2 class="ph">3. Legal basis</h2><p>Your explicit consent, and processing necessary to enter into and perform a contract (Article 5 of the Law).</p>
-      <h2 class="ph">4. Transfers</h2><p>Your data is shared only with the universities and authorities you ask us to apply to, and with the technical service providers we use to store data, only as far as necessary.</p>
+      <h2 class="ph">4. Transfers</h2><p>Your data is shared only with the universities and authorities you ask us to apply to, and with the technical service providers we use to store data, only as far as necessary. The data is stored on servers in the European Union (Germany).</p>
       <h2 class="ph">5. Retention</h2><p>We keep your data while providing the service and for the period required by law, then delete or anonymise it.</p>
       <h2 class="ph">6. Your rights</h2><p>Under Article 11 you may learn whether your data is processed, request information, ask for correction or deletion, and object to processing. Contact: ${contact}</p>`,
     tr: `<p>Bu aydınlatma metni, ${co} ("Ofis") tarafından kişisel verilerinizin 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında nasıl işlendiğini açıklar.</p>
-      <h2 class="ph">1. Toplanan veriler</h2><p>Ad soyad, telefon, e-posta, uyruk ve ikamet ülkesi, eğitim bilgileri (seviye, bölüm, not ortalaması, tercih edilen üniversite) ve başvuru formuyla ilettiğiniz notlar.</p>
+      <h2 class="ph">1. Toplanan veriler</h2><p>Ad soyad, telefon, e-posta, uyruk ve ikamet ülkesi, eğitim bilgileri (seviye, bölüm, not ortalaması, tercih edilen üniversite) ve başvuru formuyla ilettiğiniz notlar. Formu istenmeyen iletilerden korumak için IP adresinizin kendisini değil, ondan türetilen geri döndürülemez şifreli bir kodu saklarız.</p>
       <h2 class="ph">2. İşleme amacı</h2><p>Başvurunuzla ilgili sizinle iletişime geçmek, danışmanlık vermek, talep ettiğiniz üniversite ve hizmetlere başvurmak ve yasal yükümlülükleri yerine getirmek.</p>
       <h2 class="ph">3. Hukuki sebep</h2><p>Açık rızanız ve bir sözleşmenin kurulması ile ifası için gerekli olması (Kanun md. 5).</p>
-      <h2 class="ph">4. Aktarım</h2><p>Verileriniz yalnızca başvurmamızı istediğiniz üniversitelere ve resmî kurumlara, ayrıca verileri saklamak için kullandığımız teknik hizmet sağlayıcılara, gerekli ölçüde aktarılır.</p>
+      <h2 class="ph">4. Aktarım</h2><p>Verileriniz yalnızca başvurmamızı istediğiniz üniversitelere ve resmî kurumlara, ayrıca verileri saklamak için kullandığımız teknik hizmet sağlayıcılara, gerekli ölçüde aktarılır. Veriler Avrupa Birliği'ndeki (Almanya) sunucularda saklanır.</p>
       <h2 class="ph">5. Saklama süresi</h2><p>Verileriniz hizmet süresince ve kanunun öngördüğü süre boyunca saklanır, ardından silinir veya anonim hâle getirilir.</p>
       <h2 class="ph">6. Haklarınız</h2><p>Kanunun 11. maddesi uyarınca verilerinizin işlenip işlenmediğini öğrenme, bilgi talep etme, düzeltme veya silme isteme ve işlemeye itiraz etme haklarına sahipsiniz. İletişim: ${contact}</p>`,
   };
@@ -523,7 +531,7 @@ async function pageSearch(q) {
       [t("nav_articles"), arts.filter((a) => match(all3(a.title) + " " + all3(a.body))).map((a) => [`#/article/${a.id}`, P(a.title), t("cat_" + (a.category || "news"))])],
     ].filter((g) => g[1].length);
     const total = groups.reduce((n, g) => n + g[1].length, 0);
-    body = `<p class="muted">${total} ${t("results_for")} «${esc(q)}»</p>` + (groups.map(([title, items]) => `<h2 class="search-h">${title} <small>(${items.length})</small></h2><ul class="search-list">${items.slice(0, 30).map(([href, name, meta]) => `<li><a href="${esc(href)}"><b>${esc(name)}</b>${meta ? `<span>${esc(meta)}</span>` : ""}</a></li>`).join("")}</ul>`).join("") || `<p class="empty">${t("search_none")}</p><a class="btn btn-gold" href="${waLink(q)}" target="_blank" rel="noopener">${icons.wa} ${t("whatsapp_us")}</a>`);
+    body = `<p class="muted">${total} ${t("results_for")} «${esc(q)}»</p>` + (groups.map(([title, items]) => `<h2 class="search-h">${title} <small>(${items.length})</small></h2><ul class="search-list">${items.slice(0, 30).map(([href, name, meta]) => `<li><a href="${safeUrl(href)}"><b>${esc(name)}</b>${meta ? `<span>${esc(meta)}</span>` : ""}</a></li>`).join("")}</ul>`).join("") || `<p class="empty">${t("search_none")}</p><a class="btn btn-gold" href="${waLink(q)}" target="_blank" rel="noopener">${icons.wa} ${t("whatsapp_us")}</a>`);
   }
   return `${pageHead(t("search_title"))}<section class="section"><div class="wrap narrow">
     <form id="sform" class="search-form" role="search"><input name="q" type="search" value="${esc(q)}" placeholder="${t("search_ph")}" aria-label="${t("search_ph")}"><button class="btn btn-gold" type="submit">${icons.search} ${t("search_title")}</button></form>
