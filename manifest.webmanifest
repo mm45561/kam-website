@@ -1,0 +1,12 @@
+{
+  "name": "KAM",
+  "short_name": "KAM",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#faf5ef",
+  "theme_color": "#2B4941",
+  "icons": [
+    { "src": "assets/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

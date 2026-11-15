@@ -1,11 +1,11 @@
 // Data layer. Works in two modes:
 //  - Supabase mode (when config.js has a URL + key): real database, shared by everyone.
 //  - Demo mode: everything is saved in this browser's localStorage, seeded with sample data.
-import { CONFIG } from "./config.js?v=202611131734";
-import { SEED } from "./seed.js?v=202611131734";
+import { CONFIG } from "./config.js?v=202611151955";
+import { SEED } from "./seed.js?v=202611151955";
 
 export const IS_DEMO = !(CONFIG.supabaseUrl && CONFIG.supabaseAnonKey);
-const DEMO_KEY = "kam_demo_db_v3";
+const DEMO_KEY = "kam_demo_db_v4";
 const DEMO_PASSWORD = "kam-demo";
 
 let sb = null;
@@ -45,10 +45,10 @@ const bySort = (a, b) => (a.sort ?? 0) - (b.sort ?? 0) || String(a.created_at ||
 // Each row: { id, collection, data (object), sort, published }
 // The API returns flat objects: { id, sort, published, ...data }
 function flatten(row) {
-  return { ...(row.data || {}), id: row.id, sort: row.sort ?? 0, published: row.published !== false, created_at: row.created_at };
+  return { ...(row.data || {}), id: row.id, sort: row.sort ?? 0, published: row.published !== false, created_at: row.created_at, updated_at: row.updated_at };
 }
 function unflatten(collection, item) {
-  const { id, sort, published, created_at, ...data } = item;
+  const { id, sort, published, created_at, updated_at, ...data } = item;
   return { id, collection, data, sort: Number(sort) || 0, published: published !== false };
 }
 
@@ -78,10 +78,11 @@ export async function save(collection, item) {
     const db = loadDemo();
     const arr = (db.content[collection] = db.content[collection] || []);
     if (!item.id) {
-      item = { ...item, id: uid(), created_at: new Date().toISOString() };
+      item = { ...item, id: uid(), created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
       arr.push(item);
     } else {
       const i = arr.findIndex((x) => x.id === item.id);
+      item = { ...item, updated_at: new Date().toISOString() };
       if (i >= 0) arr[i] = { ...arr[i], ...item }; else arr.push(item);
     }
     saveDemo(db);

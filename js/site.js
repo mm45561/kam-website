@@ -1,7 +1,7 @@
-import * as Store from "./store.js?v=202611131734";
-import { CONFIG } from "./config.js?v=202611131734";
+import * as Store from "./store.js?v=202611151955";
+import { CONFIG } from "./config.js?v=202611151955";
 import { getLang, setLang, makeT, UI } from "./i18n.js";
-import { parseFees } from "./utils.js?v=202611131734";
+import { parseFees } from "./utils.js?v=202611151955";
 
 const lang = getLang();
 const t = makeT(lang);
@@ -36,11 +36,15 @@ const waLink = (text = "") => S.whatsapp ? `https://wa.me/${String(S.whatsapp).r
 function uniThumb(u) {
   return u.image
     ? `<img src="${esc(u.image)}" alt="" loading="lazy">`
-    : `<div class="thumb-ph"><img src="assets/mark-light.png" alt=""></div>`;
+    : `<div class="thumb-ph"><img src="assets/mark-light.webp" alt=""></div>`;
 }
 
 // ---------- layout ----------
 const icons = {
+  search: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  up: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>',
+  link: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>',
+  x: '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.2-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5Z"/></svg>',
   wa: '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.6-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.5 1 2.7.1.2 1.8 2.8 4.5 3.9 1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.5-.3Z"/></svg>',
   ig: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>',
   fb: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M14 8h3V4h-3a4 4 0 0 0-4 4v2H8v4h2v8h4v-8h3l1-4h-4V8Z"/></svg>',
@@ -53,8 +57,26 @@ function socials() {
   return list.filter(([k]) => S[k]).map(([k, ic]) => `<a href="${esc(S[k])}" target="_blank" rel="noopener" aria-label="${k}">${ic}</a>`).join("");
 }
 
+function shareBar(title) {
+  const url = location.href;
+  const enc = encodeURIComponent, text = enc(title);
+  return `<div class="share"><span>${t("share")}:</span>
+    <a href="https://wa.me/?text=${text}%20${enc(url)}" target="_blank" rel="noopener" aria-label="WhatsApp">${icons.wa}</a>
+    <a href="https://t.me/share/url?url=${enc(url)}&text=${text}" target="_blank" rel="noopener" aria-label="Telegram">${icons.tg}</a>
+    <a href="https://www.facebook.com/sharer/sharer.php?u=${enc(url)}" target="_blank" rel="noopener" aria-label="Facebook">${icons.fb}</a>
+    <a href="https://x.com/intent/post?url=${enc(url)}&text=${text}" target="_blank" rel="noopener" aria-label="X">${icons.x}</a>
+    <button type="button" class="copy-link" aria-label="${t("copy_link")}">${icons.link}</button></div>`;
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest(".copy-link");
+  if (!b) return;
+  navigator.clipboard?.writeText(location.href).then(() => { b.classList.add("ok"); b.setAttribute("aria-label", t("copied")); setTimeout(() => b.classList.remove("ok"), 1500); });
+});
+const srH2 = (txt) => `<h2 class="sr-only">${txt}</h2>`;
+const updatedLine = (x) => (x.updated_at ? `<p class="updated">${t("updated")}: ${fmtDate(String(x.updated_at).slice(0, 10))}</p>` : "");
+
 function renderShell() {
-  const logo = lang === "ar" ? "assets/logo-ar.png" : "assets/logo.png";
+  const logo = lang === "ar" ? "assets/logo-ar.webp" : "assets/logo.webp";
   document.getElementById("topbar").innerHTML = `
     <div class="wrap topbar-in">
       <div class="tb-contact">${S.phones ? `<a href="tel:${esc(String(S.phones).split("\n")[0].replace(/\s/g, ""))}">${icons.phone}<span dir="ltr">${esc(String(S.phones).split("\n")[0])}</span></a>` : ""}</div>
@@ -63,16 +85,18 @@ function renderShell() {
     </div>`;
   document.getElementById("header").innerHTML = `
     <div class="wrap header-in">
-      <a href="#/" class="brand"><img src="${logo}" alt="KAM" class="brand-logo ${lang === "ar" ? "ar" : ""}"></a>
-      <button class="menu-btn" aria-label="menu" aria-expanded="false"><span></span><span></span><span></span></button>
-      <nav class="nav">
+      <a href="#/" class="brand"><img src="${logo}" alt="KAM" class="brand-logo ${lang === "ar" ? "ar" : ""}" ${lang === "ar" ? 'width="500" height="193"' : 'width="600" height="133"'}></a>
+      <div class="header-tools"><a href="#/search" class="search-btn" aria-label="${t("search_title")}">${icons.search}</a>
+      <button class="menu-btn" aria-label="${t("menu")}" aria-expanded="false" aria-controls="main-nav"><span></span><span></span><span></span></button></div>
+      <nav class="nav" id="main-nav" aria-label="${t("menu")}">
         <a href="#/">${t("nav_home")}</a>
         <div class="dd"><a href="#/universities">${t("nav_universities")} ▾</a>
           <div class="dd-menu"><a href="#/universities/gov">${t("nav_gov")}</a><a href="#/universities/private">${t("nav_private")}</a><a href="#/prices">${t("nav_prices")}</a></div></div>
         <a href="#/services">${t("nav_services")}</a>
         <a href="#/scholarships">${t("nav_scholarships")}</a>
         <a href="#/calendar">${t("nav_calendar")}</a>
-        <a href="#/articles">${t("nav_articles")}</a>
+        <div class="dd"><a href="#/articles">${t("nav_guides")} ▾</a>
+          <div class="dd-menu"><a href="#/articles/exams">${t("cat_exams")}</a><a href="#/articles/openedu">${t("cat_openedu")}</a><a href="#/articles/rankings">${t("cat_rankings")}</a><a href="#/articles/recognition">${t("cat_recognition")}</a><a href="#/articles/guide">${t("cat_guide")}</a><a href="#/articles/news">${t("cat_news")}</a></div></div>
         <a href="#/about">${t("nav_about")}</a>
         <a href="#/contact">${t("nav_contact")}</a>
         <a href="#/apply" class="btn btn-gold nav-cta">${t("apply_now")}</a>
@@ -80,16 +104,23 @@ function renderShell() {
     </div>`;
   document.getElementById("footer").innerHTML = `
     <div class="wrap footer-grid">
-      <div><img src="assets/logo-light.png" alt="KAM" class="footer-logo"><p class="muted-light">${esc(P(S.tagline))}</p><div class="footer-social">${socials()}</div></div>
-      <div><h4>${t("nav_universities")}</h4><a href="#/universities/gov">${t("nav_gov")}</a><a href="#/universities/private">${t("nav_private")}</a><a href="#/prices">${t("nav_prices")}</a><a href="#/scholarships">${t("nav_scholarships")}</a></div>
-      <div><h4>KAM</h4><a href="#/services">${t("nav_services")}</a><a href="#/articles">${t("nav_articles")}</a><a href="#/about">${t("nav_about")}</a><a href="#/privacy">KVKK</a></div>
-      <div><h4>${t("contact_title")}</h4>${String(S.phones || "").split("\n").filter(Boolean).map((p) => `<a href="tel:${esc(p.replace(/\s/g, ""))}" dir="ltr">${esc(p)}</a>`).join("")}${S.email ? `<a href="mailto:${esc(S.email)}">${esc(S.email)}</a>` : ""}<span>${esc(P(S.address))}</span></div>
+      <div><img src="assets/logo-light.webp" alt="KAM" class="footer-logo" width="600" height="133" loading="lazy"><p class="muted-light">${esc(P(S.tagline))}</p><div class="footer-social">${socials()}</div></div>
+      <div><h2 class="f-h">${t("nav_universities")}</h2><a href="#/universities/gov">${t("nav_gov")}</a><a href="#/universities/private">${t("nav_private")}</a><a href="#/prices">${t("nav_prices")}</a><a href="#/scholarships">${t("nav_scholarships")}</a></div>
+      <div><h2 class="f-h">KAM</h2><a href="#/services">${t("nav_services")}</a><a href="#/articles">${t("nav_articles")}</a><a href="#/about">${t("nav_about")}</a><a href="#/search">${t("search_title")}</a><a href="#/privacy">KVKK</a></div>
+      <div><h2 class="f-h">${t("contact_title")}</h2>${String(S.phones || "").split("\n").filter(Boolean).map((p) => `<a href="tel:${esc(p.replace(/\s/g, ""))}" dir="ltr">${esc(p)}</a>`).join("")}${S.email ? `<a href="mailto:${esc(S.email)}">${esc(S.email)}</a>` : ""}<span>${esc(P(S.address))}</span></div>
     </div>
     <div class="wrap footer-bottom"><span>© ${new Date().getFullYear()} ${esc(S.companyLegalName || "KAM")}. ${t("footer_rights")}.</span><a href="admin.html">${t("admin")}</a></div>`;
   const fab = document.getElementById("wa-fab");
   fab.href = waLink();
   fab.innerHTML = icons.wa;
   fab.setAttribute("aria-label", t("whatsapp_us"));
+  document.querySelector(".skip-link").textContent = t("skip");
+  const top = document.getElementById("to-top");
+  top.innerHTML = icons.up;
+  top.setAttribute("aria-label", t("back_top"));
+  top.addEventListener("click", () => (window.KAMMotion ? window.KAMMotion.scrollTo(0) : window.scrollTo({ top: 0, behavior: "smooth" })));
+  window.addEventListener("scroll", () => top.classList.toggle("show", window.scrollY > 600), { passive: true });
+  document.getElementById("topbar").setAttribute("aria-label", t("contact_title"));
   if (Store.IS_DEMO) {
     const b = document.getElementById("demo-banner");
     b.hidden = false;
@@ -147,7 +178,7 @@ async function pageHome() {
         <p class="lead">${esc(P(S.heroSubtitle))}</p>
         <div class="hero-actions"><a href="#/apply" class="btn btn-gold btn-lg">${t("apply_now")}</a><a href="${waLink()}" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">${icons.wa} ${t("whatsapp_us")}</a></div>
       </div>
-      <div class="hero-mark"><img src="assets/mark-light.png" alt=""></div>
+      <div class="hero-mark"><img src="assets/mark-light.webp" alt=""></div>
     </div>
     ${(S.stats || []).length ? `<div class="wrap stats">${S.stats.map((s) => `<div class="stat"><b>${esc(s.value)}</b><span>${esc(P(s.label))}</span></div>`).join("")}</div>` : ""}
   </section>
@@ -193,10 +224,10 @@ async function pageUniversities(type) {
   <section class="section"><div class="wrap">
     <div class="filters">
       <div class="tabs"><a href="#/universities" class="${!type ? "on" : ""}">${t("all")}</a><a href="#/universities/gov" class="${type === "gov" ? "on" : ""}">${t("gov")}</a><a href="#/universities/private" class="${type === "private" ? "on" : ""}">${t("private")}</a></div>
-      <input id="uq" type="search" placeholder="${t("search")}">
-      <select id="ucity"><option value="">${t("city")}: ${t("all")}</option>${cities.map((c) => `<option>${esc(c)}</option>`).join("")}</select>
+      <input id="uq" type="search" placeholder="${t("search")}" aria-label="${t("search")}">
+      <select id="ucity" aria-label="${t("city")}"><option value="">${t("city")}: ${t("all")}</option>${cities.map((c) => `<option>${esc(c)}</option>`).join("")}</select>
     </div>
-    <div class="grid g4" id="ugrid"></div></div></section>`;
+    ${srH2(t("sr_results"))}<div class="grid g4" id="ugrid"></div></div></section>`;
 }
 
 const lines = (txt) => String(txt || "").split("\n").map((x) => x.replace(/^[\s•\-–*\d.)]+/, "").trim()).filter(Boolean);
@@ -217,22 +248,26 @@ async function pageUniversity(id) {
     ["fees", t("annual_fee"), fees.length ? `<table class="table"><thead><tr><th>${t("program")}</th><th>${t("annual_fee")}</th></tr></thead><tbody>${fees.map((f) => `<tr><td>${esc(P(f.name))}</td><td>${money(f.price, u.currency) || esc(f.price) || t("ask_price")}</td></tr>`).join("")}</tbody></table><p class="note">${esc(P(S.priceNote))}</p>` : ""],
     ["requirements", t("uni_requirements"), reqs.length ? `<ul class="checks">${reqs.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""],
   ].filter((x) => x[2]);
-  const facts = [[t("city"), P(u.city)], [t("founded"), u.founded], [t("uni_type"), t(u.type)], [t("uni_lang"), P(u.teachingLang)]].filter((x) => x[1]);
+  const facts = [[t("city"), P(u.city)], [t("founded"), u.founded], [t("uni_type"), t(u.type)], [t("uni_lang"), P(u.teachingLang)], [t("uni_rank"), u.ranking]].filter((x) => x[1]);
+  const faqs = lines(P(u.faq)).map((l) => l.split("|").map((x) => x.trim())).filter((x) => x.length >= 2 && x[0] && x[1]);
+  if (faqs.length) sections.push(["faq", t("uni_faq"), `<div class="faq">${faqs.map(([q, ...a]) => `<details><summary>${esc(q)}</summary><div><p>${esc(a.join(" | "))}</p></div></details>`).join("")}</div>`]);
+  const relatedUnis = (await col("universities")).filter((x) => x.id !== u.id && (x.type === u.type || P(x.city) === P(u.city))).sort((a, b) => (P(b.city) === P(u.city)) - (P(a.city) === P(u.city))).slice(0, 4);
   return `<section class="uni-hero ${u.cover ? "has-img" : ""}" ${u.cover ? `style="--cover:url('${esc(u.cover)}')"` : ""}>
-    ${u.cover ? "" : '<div class="hero-pattern" aria-hidden="true"></div><img class="uni-hero-mark" src="assets/mark-light.png" alt="">'}
+    ${u.cover ? "" : '<div class="hero-pattern" aria-hidden="true"></div><img class="uni-hero-mark" src="assets/mark-light.webp" alt="">'}
     <div class="wrap uni-hero-in">
-      <nav class="crumbs"><a href="#/">${t("nav_home")}</a> / <a href="#/universities/${u.type}">${t(u.type === "gov" ? "nav_gov" : "nav_private")}</a></nav>
+      <nav class="crumbs" aria-label="${t("breadcrumb")}"><a href="#/">${t("nav_home")}</a> / <a href="#/universities/${u.type}">${t(u.type === "gov" ? "nav_gov" : "nav_private")}</a></nav>
       <div class="uni-hero-title">${u.image ? `<div class="uni-logo"><img src="${esc(u.image)}" alt=""></div>` : ""}
         <div><span class="tag ${u.type}">${t(u.type === "gov" ? "nav_gov" : "nav_private")}</span>
         <h1>${esc(P(u.name))}${otherName && otherName !== P(u.name) ? ` <span class="alt-name" dir="ltr">${esc(otherName)}</span>` : ""}</h1>
         <p>${esc(P(u.city))}${u.founded ? ` · ${t("founded")} ${esc(u.founded)}` : ""}</p></div></div>
     </div></section>
-  ${sections.length > 1 ? `<nav class="uni-tabs"><div class="wrap">${sections.map(([k, l]) => `<a href="#/university/${esc(u.id)}?s=${k}" data-sec="${k}">${l}</a>`).join("")}</div></nav>` : ""}
+  ${sections.length > 1 ? `<nav class="uni-tabs" aria-label="${t("on_this_page")}"><div class="wrap">${sections.map(([k, l]) => `<a href="#/university/${esc(u.id)}?s=${k}" data-sec="${k}">${l}</a>`).join("")}</div></nav>` : ""}
   <section class="section"><div class="wrap two-col">
     <article class="uni-body">${sections.map(([k, l, h]) => `<div class="uni-sec" id="sec-${k}"><h2>${l}</h2>${h}</div>`).join("") || `<p class="muted">${t("uni_soon")}</p>`}
+      ${updatedLine(u)}${shareBar(P(u.name))}
       <div class="uni-cta card"><div><h3>${t("uni_cta_title")}</h3><p>${t("uni_cta_text")}</p></div><a href="#/apply?university=${encodeURIComponent(u.id)}" class="btn btn-gold btn-lg">${t("apply_now")}</a></div>
     </article>
-    <aside class="uni-side">
+    <div class="uni-side">
       <div class="side-card">
         ${u.type === "private" && u.priceFrom ? `<p class="price big">${t("price_from")} <b>${money(u.priceFrom, u.currency)}</b> <small>${t("per_year")}</small></p>` : ""}
         ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
@@ -244,18 +279,19 @@ async function pageUniversity(id) {
         ${S.whatsapp ? `<a href="${waLink(P(u.name))}" target="_blank" rel="noopener" class="btn btn-wa btn-block">${icons.wa} WhatsApp</a>` : ""}
         ${S.telegram ? `<a href="${esc(S.telegram)}" target="_blank" rel="noopener" class="btn btn-tg btn-block">${icons.tg} ${t("uni_telegram")}</a>` : ""}
       </div>
-    </aside></div></section>`;
+    </div></div></section>
+  ${relatedUnis.length ? `<section class="section alt"><div class="wrap">${sectionHead(t("related_unis"), "", "#/universities/" + u.type)}<div class="grid g4">${relatedUnis.map(uniCard).join("")}</div></div></section>` : ""}`;
 }
 
 async function pagePrices() {
   const unis = (await col("universities")).filter((u) => u.type === "private");
   return `${pageHead(t("nav_prices"), esc(P(S.priceNote)))}
   <section class="section"><div class="wrap">
-    <input id="pq" type="search" placeholder="${t("search")}" class="wide-search">
+    <input id="pq" type="search" placeholder="${t("search")}" aria-label="${t("search")}" class="wide-search">
     <div id="plist">${unis.map((u) => {
       const fees = parseFees(u.fees);
       return `<div class="price-block" data-s="${esc([u.name?.ar, u.name?.en, u.name?.tr, ...fees.map((f) => [f.name.ar, f.name.en, f.name.tr].join(" "))].join(" ").toLowerCase())}">
-        <div class="pb-head"><a href="#/university/${esc(u.id)}"><h3>${esc(P(u.name))}</h3></a><span class="meta">${esc(P(u.city))}</span>${u.priceFrom ? `<span class="price-pill">${t("price_from")} ${money(u.priceFrom, u.currency)}</span>` : ""}</div>
+        <div class="pb-head"><a href="#/university/${esc(u.id)}"><h2>${esc(P(u.name))}</h2></a><span class="meta">${esc(P(u.city))}</span>${u.priceFrom ? `<span class="price-pill">${t("price_from")} ${money(u.priceFrom, u.currency)}</span>` : ""}</div>
         ${fees.length ? `<table class="table"><thead><tr><th>${t("program")}</th><th>${t("annual_fee")}</th></tr></thead><tbody>${fees.map((f) => `<tr><td>${esc(P(f.name))}</td><td>${money(f.price, u.currency) || esc(f.price) || t("ask_price")}</td></tr>`).join("")}</tbody></table>` : `<p class="muted">${t("ask_price")}</p>`}
       </div>`;
     }).join("") || `<p class="empty">${t("no_results")}</p>`}</div></div></section>`;
@@ -263,7 +299,7 @@ async function pagePrices() {
 
 async function pageServices() {
   const services = await col("services");
-  return `${pageHead(t("sec_services"), t("sec_services_sub"))}<section class="section"><div class="wrap"><div class="grid g3">${services.map(serviceCard).join("")}</div></div></section>${ctaBand()}`;
+  return `${pageHead(t("sec_services"), t("sec_services_sub"))}<section class="section"><div class="wrap">${srH2(t("sec_services"))}<div class="grid g3">${services.map(serviceCard).join("")}</div></div></section>${ctaBand()}`;
 }
 
 async function pageScholarships() {
@@ -279,11 +315,13 @@ function calStatus(e, today) {
   if (e.regStart && e.regStart > today) return "soon";
   return "open";
 }
-async function pageCalendar() {
+async function pageCalendar(level) {
   const today = new Date().toISOString().slice(0, 10);
   const order = { open: 0, soon: 1, closed: 2 };
   const unis = await col("universities");
-  const list = (await col("calendar")).map((e) => ({ ...e, st: calStatus(e, today) }))
+  const all = await col("calendar");
+  const levels = ["bachelor", "graduate", "yos"].filter((l) => all.some((e) => (e.level || "bachelor") === l));
+  const list = all.filter((e) => !level || (e.level || "bachelor") === level).map((e) => ({ ...e, st: calStatus(e, today) }))
     .sort((a, b) => order[a.st] - order[b.st] || String(a.st === "closed" ? b.regEnd : a.regEnd || a.regStart).localeCompare(String(a.st === "closed" ? a.regEnd : b.regEnd || b.regStart)));
   setTimeout(() => {
     const q = document.getElementById("cq"), clr = document.getElementById("cclear"), sel = document.getElementById("cst");
@@ -316,8 +354,9 @@ async function pageCalendar() {
   return `${pageHead(t("cal_title"), t("cal_sub"))}<section class="section"><div class="wrap">
     <div class="cal-search card"><label for="cq">🔍 ${t("cal_search_label")}</label>
       <div class="cal-search-row"><input id="cq" type="search" placeholder="${t("cal_search_ph")}">
-      <select id="cst"><option value="">${t("all")}</option><option value="open">${t("cal_open")}</option><option value="soon">${t("cal_soon")}</option><option value="closed">${t("cal_closed")}</option></select>
+      <select id="cst" aria-label="${t("cal_status")}"><option value="">${t("all")}</option><option value="open">${t("cal_open")}</option><option value="soon">${t("cal_soon")}</option><option value="closed">${t("cal_closed")}</option></select>
       <button class="btn btn-clear" id="cclear" type="button">${t("cal_clear")}</button></div></div>
+    ${levels.length > 1 ? `<div class="tabs cal-levels"><a href="#/calendar" class="${!level ? "on" : ""}">${t("lvl_all")}</a>${levels.map((l) => `<a href="#/calendar/${l}" class="${level === l ? "on" : ""}">${t("lvl_" + l)}</a>`).join("")}</div>` : ""}
     <div class="cal-legend"><span class="lg open">${t("cal_open")}</span><span class="lg soon">${t("cal_soon")}</span><span class="lg closed">${t("cal_closed")}</span></div>
     <div class="cal-wrap"><table class="cal-table" id="ctable"><thead><tr><th>${t("cal_university")}</th><th>${t("city")}</th><th>${t("cal_start")}</th><th>${t("cal_end")}</th><th>${t("cal_results")}</th><th>${t("cal_certs")}</th><th>${t("cal_link")}</th></tr></thead>
     <tbody>${rows}</tbody></table><p class="empty" id="cempty" hidden>${t("no_results")}</p></div>
@@ -326,39 +365,42 @@ async function pageCalendar() {
 
 async function pageArticles(cat) {
   const list = await col("articles");
-  const cats = ["news", "guide", "exams", "recognition"].filter((c) => list.some((a) => a.category === c));
+  const cats = ["news", "guide", "exams", "openedu", "rankings", "recognition"].filter((c) => list.some((a) => a.category === c));
   const shown = cat ? list.filter((a) => a.category === cat) : list;
-  return `${pageHead(t("nav_articles"))}<section class="section"><div class="wrap">
+  return `${pageHead(cat ? t("cat_" + cat) : t("nav_articles"))}<section class="section"><div class="wrap">
     <div class="tabs"><a href="#/articles" class="${!cat ? "on" : ""}">${t("cat_all")}</a>${cats.map((c) => `<a href="#/articles/${c}" class="${cat === c ? "on" : ""}">${t("cat_" + c)}</a>`).join("")}</div>
-    <div class="grid g4">${[...shown].sort((a, b) => String(b.date).localeCompare(String(a.date))).map(articleCard).join("") || `<p class="empty">${t("no_results")}</p>`}</div></div></section>`;
+    ${srH2(t("sr_results"))}<div class="grid g4">${[...shown].sort((a, b) => String(b.date).localeCompare(String(a.date))).map(articleCard).join("") || `<p class="empty">${t("no_results")}</p>`}</div></div></section>`;
 }
 
 async function pageArticle(id) {
   const a = (await col("articles")).find((x) => x.id === id);
   if (!a) return notFound();
+  const related = (await col("articles")).filter((x) => x.id !== a.id && x.category === a.category).slice(0, 4);
   return `${pageHead(esc(P(a.title)), `${t("cat_" + (a.category || "news"))} · ${fmtDate(a.date)}`)}
-  <section class="section"><div class="wrap narrow prose">${a.image ? `<img src="${esc(a.image)}" alt="" class="article-img">` : ""}${paras(P(a.body))}
-  <p class="mt"><a href="#/articles" class="link">${t("back")}</a></p></div></section>${ctaBand()}`;
+  <section class="section"><div class="wrap narrow"><div class="prose">${a.image ? `<img src="${esc(a.image)}" alt="" class="article-img">` : ""}${paras(P(a.body))}</div>
+  ${updatedLine(a)}${shareBar(P(a.title))}
+  <p class="mt"><a href="#/articles/${esc(a.category || "")}" class="link">${t("back")}</a></p></div></section>
+  ${related.length ? `<section class="section alt"><div class="wrap">${sectionHead(t("related_articles"))}<div class="grid g4">${related.map(articleCard).join("")}</div></div></section>` : ""}${ctaBand()}`;
 }
 
 async function pageAbout() {
   return `${pageHead(t("nav_about"))}<section class="section"><div class="wrap two-col">
     <article class="prose">${paras(P(S.about))}</article>
-    <aside class="side-card center"><img src="assets/logo-ar.png" alt="" class="about-logo"><img src="assets/logo.png" alt="" class="about-logo"></aside></div></section>
+    <div class="side-card center"><img src="assets/logo-ar.webp" alt="" class="about-logo" width="500" height="193" loading="lazy"><img src="assets/logo.webp" alt="" class="about-logo" width="600" height="133" loading="lazy"></div></div></section>
     ${(S.stats || []).length ? `<section class="section alt"><div class="wrap stats dark">${S.stats.map((s) => `<div class="stat"><b>${esc(s.value)}</b><span>${esc(P(s.label))}</span></div>`).join("")}</div></section>` : ""}${ctaBand()}`;
 }
 
 async function pageContact() {
   return `${pageHead(t("contact_title"))}<section class="section"><div class="wrap two-col">
     <div class="contact-list">
-      ${S.phones ? `<div><h3>${t("phones")}</h3>${String(S.phones).split("\n").filter(Boolean).map((p) => `<a href="tel:${esc(p.replace(/\s/g, ""))}" dir="ltr">${esc(p)}</a>`).join("<br>")}</div>` : ""}
-      ${S.whatsapp ? `<div><h3>WhatsApp</h3><a href="${waLink()}" target="_blank" rel="noopener" class="btn btn-gold">${icons.wa} ${t("whatsapp_us")}</a></div>` : ""}
-      ${S.email ? `<div><h3>${t("email")}</h3><a href="mailto:${esc(S.email)}">${esc(S.email)}</a></div>` : ""}
-      ${P(S.address) ? `<div><h3>${t("address")}</h3><p>${esc(P(S.address))}</p></div>` : ""}
-      ${P(S.workingHours) ? `<div><h3>${t("hours")}</h3><p>${esc(P(S.workingHours))}</p></div>` : ""}
-      <div><h3>${t("follow")}</h3><div class="footer-social dark">${socials()}</div></div>
+      ${S.phones ? `<div><h2>${t("phones")}</h2>${String(S.phones).split("\n").filter(Boolean).map((p) => `<a href="tel:${esc(p.replace(/\s/g, ""))}" dir="ltr">${esc(p)}</a>`).join("<br>")}</div>` : ""}
+      ${S.whatsapp ? `<div><h2>WhatsApp</h2><a href="${waLink()}" target="_blank" rel="noopener" class="btn btn-gold">${icons.wa} ${t("whatsapp_us")}</a></div>` : ""}
+      ${S.email ? `<div><h2>${t("email")}</h2><a href="mailto:${esc(S.email)}">${esc(S.email)}</a></div>` : ""}
+      ${P(S.address) ? `<div><h2>${t("address")}</h2><p>${esc(P(S.address))}</p></div>` : ""}
+      ${P(S.workingHours) ? `<div><h2>${t("hours")}</h2><p>${esc(P(S.workingHours))}</p></div>` : ""}
+      <div><h2>${t("follow")}</h2><div class="footer-social dark">${socials()}</div></div>
     </div>
-    <div>${S.mapEmbed && /^https:\/\/(www\.)?google\.[a-z.]+\/maps\/embed/.test(S.mapEmbed) ? `<iframe class="map" src="${esc(S.mapEmbed)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="map"></iframe>` : `<div class="side-card center"><img src="assets/mark.png" alt="" style="width:120px"></div>`}</div>
+    <div>${S.mapEmbed && /^https:\/\/(www\.)?google\.[a-z.]+\/maps\/embed/.test(S.mapEmbed) ? `<iframe class="map" src="${esc(S.mapEmbed)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="map"></iframe>` : `<div class="side-card center"><img src="assets/mark.webp" alt="" style="width:120px"></div>`}</div>
   </div></section>`;
 }
 
@@ -436,28 +478,56 @@ function pagePrivacy() {
   const contact = [S.email, String(S.phones || "").split("\n")[0]].filter(Boolean).map(esc).join(" · ");
   const body = {
     ar: `<p>يوضح هذا النص كيف يعالج ${co} ("المكتب") بياناتك الشخصية وفقاً لقانون حماية البيانات الشخصية التركي رقم 6698 (KVKK).</p>
-      <h3>١. البيانات التي نجمعها</h3><p>الاسم، رقم الهاتف، البريد الإلكتروني، الجنسية وبلد الإقامة، المعلومات الدراسية (المرحلة، التخصص، المعدل، الجامعة المفضلة) وأي ملاحظات ترسلها لنا عبر نموذج التسجيل.</p>
-      <h3>٢. سبب المعالجة</h3><p>للتواصل معك بخصوص طلبك، وتقديم الاستشارة، والتقديم على الجامعات والخدمات التي تطلبها، وتنفيذ الالتزامات القانونية.</p>
-      <h3>٣. الأساس القانوني</h3><p>موافقتك الصريحة، وضرورة المعالجة لإبرام العقد وتنفيذه (المادة 5 من القانون).</p>
-      <h3>٤. نقل البيانات</h3><p>تُنقل بياناتك فقط إلى الجامعات والجهات الرسمية التي تطلب التقديم عليها، وإلى مزودي الخدمات التقنية الذين نستخدمهم لحفظ البيانات، وبالقدر اللازم فقط.</p>
-      <h3>٥. مدة الحفظ</h3><p>نحفظ بياناتك طوال فترة تقديم الخدمة والمدة التي يفرضها القانون، ثم نحذفها أو نجعلها مجهولة الهوية.</p>
-      <h3>٦. حقوقك</h3><p>يحق لك وفق المادة 11 معرفة ما إذا كانت بياناتك تُعالج، وطلب معلومات عنها، وتصحيحها أو حذفها، والاعتراض على معالجتها. للتواصل: ${contact}</p>`,
+      <h2 class="ph">١. البيانات التي نجمعها</h2><p>الاسم، رقم الهاتف، البريد الإلكتروني، الجنسية وبلد الإقامة، المعلومات الدراسية (المرحلة، التخصص، المعدل، الجامعة المفضلة) وأي ملاحظات ترسلها لنا عبر نموذج التسجيل.</p>
+      <h2 class="ph">٢. سبب المعالجة</h2><p>للتواصل معك بخصوص طلبك، وتقديم الاستشارة، والتقديم على الجامعات والخدمات التي تطلبها، وتنفيذ الالتزامات القانونية.</p>
+      <h2 class="ph">٣. الأساس القانوني</h2><p>موافقتك الصريحة، وضرورة المعالجة لإبرام العقد وتنفيذه (المادة 5 من القانون).</p>
+      <h2 class="ph">٤. نقل البيانات</h2><p>تُنقل بياناتك فقط إلى الجامعات والجهات الرسمية التي تطلب التقديم عليها، وإلى مزودي الخدمات التقنية الذين نستخدمهم لحفظ البيانات، وبالقدر اللازم فقط.</p>
+      <h2 class="ph">٥. مدة الحفظ</h2><p>نحفظ بياناتك طوال فترة تقديم الخدمة والمدة التي يفرضها القانون، ثم نحذفها أو نجعلها مجهولة الهوية.</p>
+      <h2 class="ph">٦. حقوقك</h2><p>يحق لك وفق المادة 11 معرفة ما إذا كانت بياناتك تُعالج، وطلب معلومات عنها، وتصحيحها أو حذفها، والاعتراض على معالجتها. للتواصل: ${contact}</p>`,
     en: `<p>This notice explains how ${co} ("the Office") processes your personal data under Turkish Personal Data Protection Law No. 6698 (KVKK).</p>
-      <h3>1. Data we collect</h3><p>Name, phone number, email, nationality and country of residence, education details (degree level, program, grade, preferred university) and any notes you send through the application form.</p>
-      <h3>2. Purpose</h3><p>To contact you about your application, provide advice, apply to the universities and services you request, and meet legal obligations.</p>
-      <h3>3. Legal basis</h3><p>Your explicit consent, and processing necessary to enter into and perform a contract (Article 5 of the Law).</p>
-      <h3>4. Transfers</h3><p>Your data is shared only with the universities and authorities you ask us to apply to, and with the technical service providers we use to store data, only as far as necessary.</p>
-      <h3>5. Retention</h3><p>We keep your data while providing the service and for the period required by law, then delete or anonymise it.</p>
-      <h3>6. Your rights</h3><p>Under Article 11 you may learn whether your data is processed, request information, ask for correction or deletion, and object to processing. Contact: ${contact}</p>`,
+      <h2 class="ph">1. Data we collect</h2><p>Name, phone number, email, nationality and country of residence, education details (degree level, program, grade, preferred university) and any notes you send through the application form.</p>
+      <h2 class="ph">2. Purpose</h2><p>To contact you about your application, provide advice, apply to the universities and services you request, and meet legal obligations.</p>
+      <h2 class="ph">3. Legal basis</h2><p>Your explicit consent, and processing necessary to enter into and perform a contract (Article 5 of the Law).</p>
+      <h2 class="ph">4. Transfers</h2><p>Your data is shared only with the universities and authorities you ask us to apply to, and with the technical service providers we use to store data, only as far as necessary.</p>
+      <h2 class="ph">5. Retention</h2><p>We keep your data while providing the service and for the period required by law, then delete or anonymise it.</p>
+      <h2 class="ph">6. Your rights</h2><p>Under Article 11 you may learn whether your data is processed, request information, ask for correction or deletion, and object to processing. Contact: ${contact}</p>`,
     tr: `<p>Bu aydınlatma metni, ${co} ("Ofis") tarafından kişisel verilerinizin 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında nasıl işlendiğini açıklar.</p>
-      <h3>1. Toplanan veriler</h3><p>Ad soyad, telefon, e-posta, uyruk ve ikamet ülkesi, eğitim bilgileri (seviye, bölüm, not ortalaması, tercih edilen üniversite) ve başvuru formuyla ilettiğiniz notlar.</p>
-      <h3>2. İşleme amacı</h3><p>Başvurunuzla ilgili sizinle iletişime geçmek, danışmanlık vermek, talep ettiğiniz üniversite ve hizmetlere başvurmak ve yasal yükümlülükleri yerine getirmek.</p>
-      <h3>3. Hukuki sebep</h3><p>Açık rızanız ve bir sözleşmenin kurulması ile ifası için gerekli olması (Kanun md. 5).</p>
-      <h3>4. Aktarım</h3><p>Verileriniz yalnızca başvurmamızı istediğiniz üniversitelere ve resmî kurumlara, ayrıca verileri saklamak için kullandığımız teknik hizmet sağlayıcılara, gerekli ölçüde aktarılır.</p>
-      <h3>5. Saklama süresi</h3><p>Verileriniz hizmet süresince ve kanunun öngördüğü süre boyunca saklanır, ardından silinir veya anonim hâle getirilir.</p>
-      <h3>6. Haklarınız</h3><p>Kanunun 11. maddesi uyarınca verilerinizin işlenip işlenmediğini öğrenme, bilgi talep etme, düzeltme veya silme isteme ve işlemeye itiraz etme haklarına sahipsiniz. İletişim: ${contact}</p>`,
+      <h2 class="ph">1. Toplanan veriler</h2><p>Ad soyad, telefon, e-posta, uyruk ve ikamet ülkesi, eğitim bilgileri (seviye, bölüm, not ortalaması, tercih edilen üniversite) ve başvuru formuyla ilettiğiniz notlar.</p>
+      <h2 class="ph">2. İşleme amacı</h2><p>Başvurunuzla ilgili sizinle iletişime geçmek, danışmanlık vermek, talep ettiğiniz üniversite ve hizmetlere başvurmak ve yasal yükümlülükleri yerine getirmek.</p>
+      <h2 class="ph">3. Hukuki sebep</h2><p>Açık rızanız ve bir sözleşmenin kurulması ile ifası için gerekli olması (Kanun md. 5).</p>
+      <h2 class="ph">4. Aktarım</h2><p>Verileriniz yalnızca başvurmamızı istediğiniz üniversitelere ve resmî kurumlara, ayrıca verileri saklamak için kullandığımız teknik hizmet sağlayıcılara, gerekli ölçüde aktarılır.</p>
+      <h2 class="ph">5. Saklama süresi</h2><p>Verileriniz hizmet süresince ve kanunun öngördüğü süre boyunca saklanır, ardından silinir veya anonim hâle getirilir.</p>
+      <h2 class="ph">6. Haklarınız</h2><p>Kanunun 11. maddesi uyarınca verilerinizin işlenip işlenmediğini öğrenme, bilgi talep etme, düzeltme veya silme isteme ve işlemeye itiraz etme haklarına sahipsiniz. İletişim: ${contact}</p>`,
   };
   return `${pageHead(t("privacy_title"))}<section class="section"><div class="wrap narrow prose">${body[lang] || body.en}</div></section>`;
+}
+
+async function pageSearch(q) {
+  const norm = (x) => String(x || "").toLowerCase().normalize("NFKD").replace(/[\u064B-\u065F\u0670\u0300-\u036f]/g, "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/ı/g, "i");
+  const all3 = (o) => (o && typeof o === "object" ? [o.ar, o.en, o.tr].join(" ") : String(o || ""));
+  setTimeout(() => {
+    const f = document.getElementById("sform");
+    f?.addEventListener("submit", (e) => { e.preventDefault(); location.hash = "#/search?q=" + encodeURIComponent(f.q.value.trim()); });
+    if (!q) f?.q.focus();
+  });
+  let body = "";
+  if (q) {
+    const words = norm(q).split(/\s+/).filter(Boolean);
+    const match = (txt) => { const n = norm(txt); return words.every((w) => n.includes(w)); };
+    const [unis, arts, schs, cals, svcs] = await Promise.all([col("universities"), col("articles"), col("scholarships"), col("calendar"), col("services")]);
+    const groups = [
+      [t("nav_universities"), unis.filter((u) => match([all3(u.name), all3(u.city), all3(u.description), all3(u.programs), u.fees].join(" "))).map((u) => [`#/university/${u.id}`, P(u.name), `${t(u.type)} · ${P(u.city)}`])],
+      [t("nav_calendar"), cals.filter((e) => match(all3(e.university) + " " + all3(e.city))).map((e) => [`#/calendar`, P(e.university), `${t("cal_start")} ${dmy(e.regStart)} · ${t("cal_end")} ${dmy(e.regEnd)}`])],
+      [t("nav_scholarships"), schs.filter((x) => match(all3(x.title) + " " + all3(x.body))).map((x) => [`#/scholarships`, P(x.title), ""])],
+      [t("nav_services"), svcs.filter((x) => match(all3(x.title) + " " + all3(x.description))).map((x) => [`#/services`, P(x.title), ""])],
+      [t("nav_articles"), arts.filter((a) => match(all3(a.title) + " " + all3(a.body))).map((a) => [`#/article/${a.id}`, P(a.title), t("cat_" + (a.category || "news"))])],
+    ].filter((g) => g[1].length);
+    const total = groups.reduce((n, g) => n + g[1].length, 0);
+    body = `<p class="muted">${total} ${t("results_for")} «${esc(q)}»</p>` + (groups.map(([title, items]) => `<h2 class="search-h">${title} <small>(${items.length})</small></h2><ul class="search-list">${items.slice(0, 30).map(([href, name, meta]) => `<li><a href="${esc(href)}"><b>${esc(name)}</b>${meta ? `<span>${esc(meta)}</span>` : ""}</a></li>`).join("")}</ul>`).join("") || `<p class="empty">${t("search_none")}</p><a class="btn btn-gold" href="${waLink(q)}" target="_blank" rel="noopener">${icons.wa} ${t("whatsapp_us")}</a>`);
+  }
+  return `${pageHead(t("search_title"))}<section class="section"><div class="wrap narrow">
+    <form id="sform" class="search-form" role="search"><input name="q" type="search" value="${esc(q)}" placeholder="${t("search_ph")}" aria-label="${t("search_ph")}"><button class="btn btn-gold" type="submit">${icons.search} ${t("search_title")}</button></form>
+    ${body}</div></section>`;
 }
 
 const notFound = () => `${pageHead(t("not_found"))}<section class="section"><div class="wrap"><a class="btn btn-gold" href="#/">${t("nav_home")}</a></div></section>`;
@@ -479,7 +549,8 @@ async function route() {
       case "prices": html = await pagePrices(); break;
       case "services": html = await pageServices(); break;
       case "scholarships": html = await pageScholarships(); break;
-      case "calendar": html = await pageCalendar(); break;
+      case "calendar": html = await pageCalendar(parts[1]); break;
+      case "search": html = await pageSearch(params.get("q") || ""); break;
       case "articles": html = await pageArticles(parts[1]); break;
       case "article": html = await pageArticle(parts[1]); break;
       case "about": html = await pageAbout(); break;
@@ -497,6 +568,10 @@ async function route() {
   document.querySelectorAll(".nav a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + path || (path === "/" && a.getAttribute("href") === "#/")));
   const h1 = app.querySelector("h1");
   document.title = (path === "/" ? "" : (h1 ? h1.textContent + " | " : "")) + (P(S.siteName) || "KAM");
+  const desc = (app.querySelector(".page-head p, .uni-sec p, .lead, .prose p")?.textContent || P(S.heroSubtitle) || "").trim().slice(0, 160);
+  for (const [sel, attr, val] of [['meta[name="description"]', "content", desc], ['meta[property="og:title"]', "content", document.title], ['meta[property="og:description"]', "content", desc]]) {
+    const m = document.querySelector(sel); if (m) m.setAttribute(attr, val);
+  }
   const sec = params.get("s") && document.getElementById("sec-" + params.get("s"));
   if (window.KAMMotion) window.KAMMotion.onPage({ target: sec || null });
   else if (sec) sec.scrollIntoView({ block: "start" });
