@@ -16,7 +16,7 @@ The site is plain HTML/CSS/JavaScript with no build step, so it can be hosted fo
 
 ## Going live (one time, about 20 minutes)
 
-1. **Supabase**: create a free account at supabase.com (sign in with GitHub) and create a new project. Region: Frankfurt (closest to Türkiye). Let Supabase generate the database password and keep it in a password manager.
+1. **Supabase**: create a free account at supabase.com (sign in with GitHub) and create a new project. Region: Frankfurt (closest to Türkiye). Let Supabase generate the database password and keep it in a password manager. Under *Security*, keep *Enable Data API* on and turn *Enable automatic RLS* on. *Automatically expose new tables* can be on or off: `schema.sql` sets every privilege itself. Off is safer.
 2. **Database**: in the project open *SQL Editor → New query*, paste the content of `supabase/schema.sql` and press *Run*. It can be run again safely after updates.
 3. **Admin user**: *Authentication → Users → Add user → Create new user*, enter the office email and a long password (16+ characters), and tick *Auto confirm*. Then in *SQL Editor* run:
    ```sql
@@ -43,6 +43,8 @@ Custom domain (later): in the Pages project open *Custom domains*, add the domai
 | Images | Admin-only upload, images only, 3 MB max. |
 | Browser | No third-party scripts: Supabase, GSAP and Lenis are local copies in `assets/vendor`. Content Security Policy allows scripts only from the site itself. Admin-entered links are limited to http, https, mailto and tel. |
 | Excel export | Cells that start with `=`, `+`, `-` or `@` are neutralised so a student's text can never run as a formula. |
+
+The free Supabase plan pauses a project after 7 days without visits. `.github/workflows/keep-alive.yml` reads the public settings row every 3 days with the public anon key, the same request any visitor makes, so it never sees student data. GitHub turns scheduled workflows off after 60 days without commits: if that happens, open *Actions → Keep database awake → Enable workflow*.
 
 Accounts to protect with two-step login: GitHub, Supabase, Cloudflare and the office email.
 

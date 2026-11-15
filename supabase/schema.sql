@@ -49,6 +49,15 @@ create table if not exists public.applications (
 alter table public.applications add column if not exists ip_hash text;
 create index if not exists applications_ip_idx on public.applications (ip_hash, created_at);
 
+-- Explicit privileges, so the site works whether or not Supabase's
+-- "Automatically expose new tables" option is on. Row Level Security below
+-- then decides which rows each visitor or admin may touch.
+grant usage on schema public to anon, authenticated;
+revoke all on public.admins, public.content, public.settings from anon, authenticated;
+grant select on public.content, public.settings to anon, authenticated;
+grant insert, update, delete on public.content, public.settings to authenticated;
+grant select on public.admins to authenticated;
+
 alter table public.admins enable row level security;
 alter table public.content enable row level security;
 alter table public.settings enable row level security;
@@ -57,8 +66,6 @@ alter table public.applications enable row level security;
 -- admins: only admins can see the list
 drop policy if exists admins_read on public.admins;
 create policy admins_read on public.admins for select using (public.is_admin());
-revoke insert, update, delete on public.admins from anon, authenticated;
-revoke all on public.admins from anon;
 
 -- content: everyone reads published rows, admins do everything
 drop policy if exists content_public_read on public.content;
@@ -74,7 +81,7 @@ create policy settings_admin_write on public.settings for all using (public.is_a
 
 -- applications: anyone can send one (insert only); only admins can read/change/delete.
 -- The public may fill only the "data" column. Every other column is set by the database.
-revoke insert, update, delete, select on public.applications from anon, authenticated;
+revoke all on public.applications from anon, authenticated;
 grant insert (data) on public.applications to anon, authenticated;
 grant select, update (status, notes), delete on public.applications to authenticated;
 
