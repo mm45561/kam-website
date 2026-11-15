@@ -1,5 +1,5 @@
 // Interface text in three languages. Content (universities, services...) is edited in the admin panel.
-import { CONFIG } from "./config.js?v=202611152100";
+import { CONFIG } from "./config.js?v=202611152110";
 
 export const UI = {
   ar: {
