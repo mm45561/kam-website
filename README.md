@@ -16,7 +16,7 @@ The site is plain HTML/CSS/JavaScript with no build step, so it can be hosted fo
 
 ## Going live (one time, about 20 minutes)
 
-1. **Supabase**: create a free account at supabase.com (sign in with GitHub) and create a new project. Region: Frankfurt (closest to Türkiye). Let Supabase generate the database password and keep it in a password manager.
+1. **Supabase**: create a free account at supabase.com (sign in with GitHub) and create a new project. Region: Frankfurt (closest to Türkiye). Let Supabase generate the database password and keep it in a password manager. Under *Security*, keep *Enable Data API* on and turn *Enable automatic RLS* on. *Automatically expose new tables* can be on or off: `schema.sql` sets every privilege itself. Off is safer.
 2. **Database**: in the project open *SQL Editor → New query*, paste the content of `supabase/schema.sql` and press *Run*. It can be run again safely after updates.
 3. **Admin user**: *Authentication → Users → Add user → Create new user*, enter the office email and a long password (16+ characters), and tick *Auto confirm*. Then in *SQL Editor* run:
    ```sql
