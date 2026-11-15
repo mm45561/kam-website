@@ -23,6 +23,8 @@ export const SCHEMAS = {
       CUR,
       { name: "fees", label: "جدول أسعار التخصصات", type: "long", rows: 8, dir: "auto",
         help: "كل تخصص في سطر. الشكل: الاسم بالعربي | الاسم بالإنكليزي | الاسم بالتركي | السعر\nمثال: الطب | Medicine | Tıp | 25000\nأو باختصار: الطب | 25000" },
+      { name: "ranking", label: "ترتيب الجامعة (اختياري)", type: "text", help: "مثال: 21 محلياً. اكتبه فقط إذا كان من مصدر موثوق." },
+      { name: "faq", label: "أسئلة شائعة عن الجامعة", type: "i18n-long", rows: 5, help: "كل سؤال في سطر بهذا الشكل: السؤال | الجواب" },
       { name: "featured", label: "إظهارها في الصفحة الرئيسية", type: "bool" },
     ],
   },
@@ -57,6 +59,7 @@ export const SCHEMAS = {
     columns: (x, P) => [P(x.university), P(x.city), x.regStart || "—", x.regEnd || "—"],
     headers: ["الجامعة", "المدينة", "بدء التسجيل", "انتهاء التسجيل"],
     fields: [
+      { name: "level", label: "نوع الموعد", type: "select", options: [["bachelor", "بكالوريوس"], ["graduate", "دراسات عليا"], ["yos", "امتحان يوس"]] },
       { name: "universityId", label: "صفحة الجامعة (زر سجّل هنا يفتحها)", type: "uniref", help: "اختر الجامعة من قائمة الجامعات، وسيُملأ الاسم والمدينة تلقائياً." },
       { name: "university", label: "اسم الجامعة", type: "i18n", required: true },
       { name: "city", label: "المدينة", type: "i18n" },
@@ -69,10 +72,10 @@ export const SCHEMAS = {
   },
   articles: {
     title: "الأخبار والمقالات", single: "مقال", icon: "📰",
-    columns: (x, P) => [P(x.title), { news: "خبر", guide: "دليل", exams: "امتحانات", recognition: "اعتراف" }[x.category] || "", x.date || ""],
+    columns: (x, P) => [P(x.title), { news: "خبر", guide: "دليل", exams: "امتحانات", openedu: "تعليم مفتوح", rankings: "ترتيب", recognition: "اعتراف" }[x.category] || "", x.date || ""],
     headers: ["العنوان", "التصنيف", "التاريخ"],
     fields: [
-      { name: "category", label: "التصنيف", type: "select", options: [["news", "خبر (يظهر في الشريط المتحرك)"], ["guide", "دليل"], ["exams", "امتحانات"], ["recognition", "الاعتراف بالشهادات"]], required: true },
+      { name: "category", label: "التصنيف", type: "select", options: [["news", "خبر (يظهر في الشريط المتحرك)"], ["guide", "دليل"], ["exams", "امتحانات (يوس، YKS…)"], ["openedu", "التعليم المفتوح"], ["rankings", "ترتيب الجامعات"], ["recognition", "الاعتراف بالشهادات"]], required: true },
       { name: "date", label: "التاريخ", type: "date" },
       { name: "title", label: "العنوان", type: "i18n", required: true },
       { name: "image", label: "صورة الغلاف", type: "image" },

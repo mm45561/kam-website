@@ -57,6 +57,19 @@ assets/             logo and icons
 
 `js/motion.js` adds smooth scrolling (Lenis), section reveals on scroll (GSAP ScrollTrigger), a word-by-word headline (GSAP SplitText, split by words so Arabic letters stay joined) and a soft animated hero background. All of it is turned off for visitors whose device asks for reduced motion.
 
+## Before launch (depends on hosting, database and domain)
+
+| Item | Depends on | Notes |
+|---|---|---|
+| Clean page addresses for Google (`/universities/...` instead of `#/universities/...`) | Hosting + domain | Needs a host with rewrite rules (Cloudflare Pages or Netlify `_redirects`). Hash pages are not indexed separately by Google. |
+| `sitemap.xml`, `robots.txt`, canonical and hreflang tags | Domain | Need the final address. |
+| Connect Supabase (`js/config.js`) and run `supabase/schema.sql` | Database | Until then the site is in demo mode. |
+| Notify the office of each new application (email or Telegram) | Database | Supabase database webhook or Edge Function. |
+| Spam protection on the application form | Hosting | Cloudflare Turnstile (free). |
+| Students uploading documents (passport, diploma) | Database | Private storage bucket + KVKK consent text update. |
+| Visitor statistics | Hosting + domain | Cloudflare Web Analytics (no cookies) or Google Analytics (needs a cookie notice). |
+| Office email (info@domain) | Domain | Show it in Admin → Settings. |
+
 ## Legal checklist (Türkiye)
 
 - KVKK: the privacy notice page (`#/privacy`) and the consent checkbox on the form are included. Have a lawyer review the text and consider VERBİS registration if required.
