@@ -33,6 +33,10 @@ The site is plain HTML/CSS/JavaScript with no build step, so it can be hosted fo
 
 Custom domain (later): in the Pages project open *Custom domains*, add the domain, then in Supabase set *Authentication → URL Configuration → Site URL* to it.
 
+## Pre-launch: hidden from search engines
+
+Until launch day the site tells Google and other search engines not to list it: a `noindex` line in `index.html` and an `X-Robots-Tag` line in `_headers`, both marked **PRE-LAUNCH**. On launch day delete those two lines.
+
 ## Security
 
 | Layer | Protection |
