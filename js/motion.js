@@ -21,8 +21,16 @@
       if (opts.target) api.scrollTo(opts.target, { offset: -150 });
       else if (lenis) lenis.scrollTo(0, { immediate: true });
       else window.scrollTo(0, 0);
-      pageCtx = gsap.context(() => animatePage(document.getElementById("app")));
+      const app = document.getElementById("app");
+      gsap.fromTo(app, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.5, ease: EASE, clearProps: "transform,opacity" });
+      pageCtx = gsap.context(() => animatePage(app));
       ScrollTrigger.refresh();
+    },
+    // Soft page transition: the old page fades and lifts away before the new one is drawn (idea 4)
+    leave() {
+      const app = document.getElementById("app");
+      if (!api.enabled || !app || !app.firstElementChild || app.querySelector(".loading")) return Promise.resolve();
+      return new Promise((res) => gsap.to(app, { opacity: 0, y: -14, duration: 0.22, ease: "power2.in", onComplete: res }));
     },
     scrollTo(target, { offset = 0, immediate = false } = {}) {
       if (lenis) lenis.scrollTo(target, { offset, immediate, duration: 1.1 });
@@ -56,7 +64,49 @@
     heroBg?.stop();
     api.enabled = false;
     document.documentElement.classList.remove("motion");
+    gsap.set(document.getElementById("app"), { clearProps: "all" });
   });
+
+  // FAQ answers slide open and closed instead of jumping (idea 10)
+  document.addEventListener("click", (e) => {
+    const sum = e.target.closest?.(".faq summary");
+    if (!sum || !api.enabled) return;
+    const d = sum.parentElement, body = d.querySelector(":scope > div");
+    if (!body || d.dataset.anim) { e.preventDefault(); return; }
+    e.preventDefault();
+    d.dataset.anim = "1";
+    const done = () => { delete d.dataset.anim; gsap.set(body, { clearProps: "height,opacity,overflow" }); ScrollTrigger.refresh(); };
+    if (d.open) {
+      d.classList.remove("is-open");
+      gsap.to(body, { height: 0, opacity: 0, overflow: "hidden", duration: 0.32, ease: "power2.inOut", onComplete: () => { d.open = false; done(); } });
+    } else {
+      d.open = true;
+      d.classList.add("is-open");
+      gsap.from(body, { height: 0, opacity: 0, overflow: "hidden", duration: 0.42, ease: EASE, onComplete: done });
+    }
+  });
+
+  // Magnetic gold buttons: they lean a little toward the mouse (idea 8)
+  const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+  document.addEventListener("pointermove", (e) => {
+    if (!api.enabled || !fine.matches) return;
+    const b = e.target.closest?.(".btn-gold.btn-lg, .nav-cta");
+    if (b !== api._mag) { if (api._mag) gsap.to(api._mag, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, .5)" }); api._mag = b; }
+    if (!b) return;
+    const r = b.getBoundingClientRect();
+    gsap.to(b, { x: (e.clientX - r.left - r.width / 2) * 0.25, y: (e.clientY - r.top - r.height / 2) * 0.35, duration: 0.3, ease: "power2.out" });
+  }, { passive: true });
+
+  // Gentle 3D tilt on service and scholarship cards (mouse only)
+  document.addEventListener("pointermove", (e) => {
+    if (!api.enabled || !fine.matches) return;
+    const c = e.target.closest?.(".service-card, .sch-card");
+    if (c !== api._tilt) { if (api._tilt) gsap.to(api._tilt, { rotateX: 0, rotateY: 0, y: 0, duration: 0.5, ease: EASE }); api._tilt = c; }
+    if (!c) return;
+    const r = c.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+    gsap.to(c, { rotateX: py * -6, rotateY: px * 6, y: -4, transformPerspective: 800, duration: 0.4, ease: "power2.out" });
+  }, { passive: true });
 
   function cleanup() {
     pageCtx?.revert();
@@ -88,11 +138,14 @@
     if (hero) {
       const h1 = hero.querySelector("h1");
       const words = h1 ? splitWords(h1) : [];
+      // keep the gold shimmer on the highlighted word after it is split into word pieces
+      const gw = h1?.querySelector(".gold-word");
+      if (gw) { gw.classList.add("is-split"); gw.querySelectorAll(".sw").forEach((w) => w.classList.add("gold-text")); }
       const tl = gsap.timeline({ defaults: { ease: EASE } });
       tl.from(hero.querySelector(".eyebrow"), { y: 14, autoAlpha: 0, duration: 0.6 })
         .from(words, { yPercent: 60, autoAlpha: 0, duration: 0.8, stagger: 0.07 }, "-=0.3")
         .from(hero.querySelector(".lead"), { y: 16, autoAlpha: 0, duration: 0.7 }, "-=0.45")
-        .from(hero.querySelectorAll(".hero-actions .btn"), { y: 14, autoAlpha: 0, duration: 0.6, stagger: 0.1 }, "-=0.4")
+        .fromTo(hero.querySelectorAll(".hero-actions .btn"), { y: 14, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, stagger: 0.1 }, "-=0.4")
         .from(hero.querySelectorAll(".stat"), { y: 20, autoAlpha: 0, duration: 0.6, stagger: 0.08 }, "-=0.6");
       const mark = hero.querySelector(".hero-mark img");
       if (mark) {
@@ -135,9 +188,33 @@
       onEnterBack: reveal,
     });
 
-    // Steps: the number circles pop in
-    root.querySelectorAll(".steps .num").forEach((n) => {
-      gsap.from(n, { scale: 0.4, duration: 0.6, ease: "back.out(2)", scrollTrigger: { trigger: n, start: "top 92%", once: true } });
+    // "How we work": a gold rail draws across the steps and each number lights up as it is reached (idea 5)
+    root.querySelectorAll(".steps").forEach((ol) => {
+      const lis = [...ol.children];
+      ol.classList.add("steps-anim");
+      const light = (p) => lis.forEach((li, i) => li.classList.toggle("lit", p >= (lis.length > 1 ? i / (lis.length - 1) : 0) - 0.02));
+      light(0);
+      const st = { p: 0 };
+      gsap.to(st, {
+        p: 1, ease: "none",
+        scrollTrigger: { trigger: ol, start: "top 85%", end: "bottom 55%", scrub: 0.6 },
+        onUpdate: () => { ol.style.setProperty("--rail", st.p.toFixed(3)); light(st.p); },
+      });
+    });
+
+    // Line icons draw themselves when they appear (idea 3)
+    root.querySelectorAll("svg.li").forEach((svg) => {
+      const parts = svg.querySelectorAll("path, circle, rect");
+      gsap.fromTo(parts, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut", stagger: 0.12, scrollTrigger: { trigger: svg, start: "top 95%", once: true } });
+    });
+
+    // University photos: a green curtain slides away, then the photo settles from a slight zoom (idea 9)
+    const rtl = document.documentElement.dir === "rtl";
+    root.querySelectorAll(".uni-card .thumb").forEach((th) => {
+      const media = th.querySelector("img.photo, .thumb-ph");
+      if (!media) return;
+      gsap.fromTo(media, { clipPath: rtl ? "inset(0 0 0 100%)" : "inset(0 100% 0 0)", scale: 1.18 },
+        { clipPath: "inset(0 0 0 0%)", scale: 1, duration: 1.1, ease: "expo.out", clearProps: "clipPath,transform", scrollTrigger: { trigger: th, start: "top 92%", once: true } });
     });
 
     // CTA band
