@@ -42,6 +42,8 @@ const money = (v, cur) => {
 };
 const waLink = (text = "") => S.whatsapp ? `https://wa.me/${String(S.whatsapp).replace(/\D/g, "")}${text ? "?text=" + encodeURIComponent(text) : ""}` : "#/contact";
 function uniThumb(u) {
+  // Campus photo first (the "cover" field), with the university logo as a small badge
+  if (u.cover) return `<img class="photo" src="${safeUrl(u.cover)}" alt="" loading="lazy">${u.image ? `<span class="thumb-logo"><img src="${safeUrl(u.image)}" alt="" loading="lazy"></span>` : ""}`;
   return u.image
     ? `<img src="${safeUrl(u.image)}" alt="" loading="lazy">`
     : `<div class="thumb-ph"><img src="assets/mark-light.webp" alt=""></div>`;
@@ -83,6 +85,28 @@ document.addEventListener("click", (e) => {
 const srH2 = (txt) => `<h2 class="sr-only">${txt}</h2>`;
 const updatedLine = (x) => (x.updated_at ? `<p class="updated">${t("updated")}: ${fmtDate(String(x.updated_at).slice(0, 10))}</p>` : "");
 
+// Line icons in the brand colours, used instead of emoji (pathLength=1 lets motion.js draw them in)
+const LI = (body) => `<svg class="li" viewBox="0 0 24 24" aria-hidden="true">${body.replace(/<(path|circle|rect)/g, '<$1 pathLength="1"')}</svg>`;
+const lineIcons = {
+  "🎓": LI('<path d="M2 9.5 12 4.5l10 5-10 5z"/><path class="acc" d="M6 11.5v4.5c3.5 2.5 8.5 2.5 12 0v-4.5"/><path d="M22 9.5v5"/>'),
+  "🏅": LI('<circle cx="12" cy="9" r="5.5"/><path class="acc" d="M8.6 13.5 7 21l5-2.8 5 2.8-1.6-7.5"/><path class="acc" d="m10 9 1.5 1.5L14.5 7.5"/>'),
+  "📄": LI('<path d="M6 2.5h8.5l4 4V21.5H6z"/><path d="M14.5 2.5v4h4"/><path class="acc" d="M9 12h6.5M9 15.5h6.5M9 19h4"/>'),
+  "🪪": LI('<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><circle class="acc" cx="8.5" cy="11" r="2"/><path class="acc" d="M5.5 16c.8-1.6 1.8-2.2 3-2.2s2.2.6 3 2.2"/><path d="M14 10h4.5M14 13.5h3"/>'),
+  "✈": LI('<path d="M21 3 3 10.5l7 2.5 2.5 7z"/><path class="acc" d="M10 13 21 3"/>'),
+  "📝": LI('<path d="M5 3.5h10l4 4v13H5z"/><path class="acc" d="m9 13 2 2 4-4.5"/><path d="M8.5 18.5h7"/>'),
+  "🏛": LI('<path d="M3 9.5 12 4l9 5.5z"/><path class="acc" d="M5.5 10.5v7M10 10.5v7M14 10.5v7M18.5 10.5v7"/><path d="M3 20.5h18"/>'),
+  "🏫": LI('<path d="M3 21V10l9-5.5L21 10v11z"/><path class="acc" d="M10 21v-5h4v5"/><circle class="acc" cx="12" cy="10.5" r="1.8"/>'),
+  "💲": LI('<circle cx="12" cy="12" r="9"/><path class="acc" d="M15 8.5c-.6-1-1.7-1.5-3-1.5-1.8 0-3 .9-3 2.3 0 3.2 6 1.8 6 5 0 1.4-1.3 2.4-3 2.4-1.4 0-2.6-.6-3.2-1.6M12 5.5v13"/>'),
+  "📅": LI('<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/><path class="acc" d="M7.5 14h2M11 14h2M14.5 14h2M7.5 17.5h2M11 17.5h2"/>'),
+  "★": LI('<path class="acc" d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>'),
+};
+const lineIcon = (emoji) => lineIcons[String(emoji || "").replace(/\uFE0F/g, "").trim()] || "";
+// Curved divider inspired by the curves of the KAM mark (idea 6). Two copies so the wave can drift sideways.
+const WAVE_D = "M0 30c60 0 90-22 150-22s90 22 150 22 90-22 150-22 90 22 150 22 90-22 150-22 90 22 150 22v14H0z";
+const wave = (pos) => `<div class="wave wave-${pos}" aria-hidden="true"><svg viewBox="0 0 1800 44" preserveAspectRatio="none"><path d="${WAVE_D}"/><path d="${WAVE_D}" transform="translate(900 0)"/></svg></div>`;
+// Highlight the country name in the hero title with the gold shimmer (idea 7)
+const goldWord = (txt) => esc(txt).replace(/(تركيا|Türkiye|Turkey|Turkiye)/, '<span class="gold-word">$1</span>');
+
 function renderShell() {
   const logo = lang === "ar" ? "assets/logo-ar.webp" : "assets/logo.webp";
   document.getElementById("topbar").innerHTML = `
@@ -92,6 +116,7 @@ function renderShell() {
       <div class="lang-switch">${CONFIG.languages.map((l) => `<button data-lang="${l}" class="${l === lang ? "on" : ""}">${UI[l].langName}</button>`).join("")}</div>
     </div>`;
   document.getElementById("header").innerHTML = `
+    <div class="scroll-progress" aria-hidden="true"></div>
     <div class="wrap header-in">
       <a href="#/" class="brand"><img src="${logo}" alt="KAM" class="brand-logo ${lang === "ar" ? "ar" : ""}" ${lang === "ar" ? 'width="500" height="193"' : 'width="600" height="133"'}></a>
       <div class="header-tools"><a href="#/search" class="search-btn" aria-label="${t("search_title")}">${icons.search}</a>
@@ -127,7 +152,28 @@ function renderShell() {
   top.innerHTML = icons.up;
   top.setAttribute("aria-label", t("back_top"));
   top.addEventListener("click", () => (window.KAMMotion ? window.KAMMotion.scrollTo(0) : window.scrollTo({ top: 0, behavior: "smooth" })));
-  window.addEventListener("scroll", () => top.classList.toggle("show", window.scrollY > 600), { passive: true });
+  // Glass header that shrinks on scroll + gold reading-progress line (idea 1)
+  const header = document.getElementById("header");
+  let ticking = false;
+  const onScroll = () => {
+    ticking = false;
+    const y = window.scrollY, max = document.documentElement.scrollHeight - window.innerHeight;
+    top.classList.toggle("show", y > 600);
+    document.body.classList.toggle("scrolled", y > 40);
+    header.style.setProperty("--progress", max > 0 ? Math.min(1, y / max).toFixed(4) : 0);
+  };
+  window.addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+  window.KAMScroll = onScroll;
+  // Gold spotlight that follows the mouse on cards (idea 2)
+  document.addEventListener("pointermove", (e) => {
+    if (e.pointerType !== "mouse") return;
+    const c = e.target.closest?.(".card");
+    if (!c) return;
+    const r = c.getBoundingClientRect();
+    c.style.setProperty("--mx", e.clientX - r.left + "px");
+    c.style.setProperty("--my", e.clientY - r.top + "px");
+  }, { passive: true });
   document.getElementById("topbar").setAttribute("aria-label", t("contact_title"));
   if (Store.IS_DEMO) {
     const b = document.getElementById("demo-banner");
@@ -160,7 +206,7 @@ function uniCard(u) {
 }
 function serviceCard(s) {
   const price = P(s.priceLabel) || (s.price !== "" && s.price != null ? money(s.price, s.currency) : "");
-  return `<div class="card service-card"><div class="svc-icon">${s.image ? `<img src="${safeUrl(s.image)}" alt="">` : esc(s.icon || "★")}</div>
+  return `<div class="card service-card"><div class="svc-icon">${s.image ? `<img src="${safeUrl(s.image)}" alt="">` : lineIcon(s.icon || "★") || esc(s.icon)}</div>
     <h3>${esc(P(s.title))}</h3><p>${esc(P(s.description))}</p>
     <div class="svc-foot">${price ? `<span class="price-pill">${esc(price)}</span>` : `<span class="price-pill muted">${t("ask_price")}</span>`}
     <a class="link" href="#/apply?service=${encodeURIComponent(s.id)}">${t("apply_now")}</a></div></div>`;
@@ -182,27 +228,28 @@ async function pageHome() {
     <div class="wrap hero-in">
       <div class="hero-text">
         <p class="eyebrow">${esc(P(S.tagline))}</p>
-        <h1>${esc(P(S.heroTitle))}</h1>
+        <h1>${goldWord(P(S.heroTitle))}</h1>
         <p class="lead">${esc(P(S.heroSubtitle))}</p>
         <div class="hero-actions"><a href="#/apply" class="btn btn-gold btn-lg">${t("apply_now")}</a><a href="${waLink()}" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">${icons.wa} ${t("whatsapp_us")}</a></div>
       </div>
       <div class="hero-mark"><img src="assets/mark-light.webp" alt=""></div>
     </div>
     ${(S.stats || []).length ? `<div class="wrap stats">${S.stats.map((s) => `<div class="stat"><b>${esc(s.value)}</b><span>${esc(P(s.label))}</span></div>`).join("")}</div>` : ""}
+    ${wave("bottom")}
   </section>
 
   <section class="section"><div class="wrap">${sectionHead(t("sec_services"), t("sec_services_sub"), "#/services")}
     <div class="grid g3">${services.slice(0, 6).map(serviceCard).join("")}</div></div></section>
 
   <section class="section alt"><div class="wrap">${sectionHead(t("sec_unis"), t("sec_unis_sub"), "#/universities")}
-    <div class="quick-links"><a href="#/universities/gov" class="ql">🏛️ ${t("nav_gov")}</a><a href="#/universities/private" class="ql">🏫 ${t("nav_private")}</a><a href="#/prices" class="ql">💲 ${t("nav_prices")}</a><a href="#/scholarships" class="ql">🏅 ${t("nav_scholarships")}</a><a href="#/calendar" class="ql">📅 ${t("nav_calendar")}</a></div>
+    <div class="quick-links"><a href="#/universities/gov" class="ql">${lineIcon("🏛")} ${t("nav_gov")}</a><a href="#/universities/private" class="ql">${lineIcon("🏫")} ${t("nav_private")}</a><a href="#/prices" class="ql">${lineIcon("💲")} ${t("nav_prices")}</a><a href="#/scholarships" class="ql">${lineIcon("🏅")} ${t("nav_scholarships")}</a><a href="#/calendar" class="ql">${lineIcon("📅")} ${t("nav_calendar")}</a></div>
     <div class="grid g4">${featured.map(uniCard).join("")}</div></div></section>
 
   <section class="section"><div class="wrap">${sectionHead(t("sec_steps"))}
     <ol class="steps">${[1, 2, 3, 4, 5].map((i) => `<li><span class="num">${i}</span><h3>${t("step" + i)}</h3><p>${t("step" + i + "d")}</p></li>`).join("")}</ol></div></section>
 
   ${scholarships.length ? `<section class="section alt"><div class="wrap">${sectionHead(t("sec_scholarships"), "", "#/scholarships")}
-    <div class="grid g3">${scholarships.slice(0, 3).map((s) => `<a class="card sch-card" href="#/scholarships"><h3>🏅 ${esc(P(s.title))}</h3><p>${esc(P(s.body)).slice(0, 160)}…</p></a>`).join("")}</div></div></section>` : ""}
+    <div class="grid g3">${scholarships.slice(0, 3).map((s) => `<a class="card sch-card" href="#/scholarships"><h3>${lineIcon("🏅")} ${esc(P(s.title))}</h3><p>${esc(P(s.body)).slice(0, 160)}…</p></a>`).join("")}</div></div></section>` : ""}
 
   ${articles.length ? `<section class="section"><div class="wrap">${sectionHead(t("sec_news"), "", "#/articles")}
     <div class="grid g4">${articles.slice(0, 4).map(articleCard).join("")}</div></div></section>` : ""}
@@ -211,14 +258,14 @@ async function pageHome() {
   ${ctaBand()}`;
 }
 const faqHtml = (faqs) => `<div class="faq">${faqs.map((f) => `<details><summary>${esc(P(f.q))}</summary><div>${paras(P(f.a))}</div></details>`).join("")}</div>`;
-const ctaBand = () => `<section class="cta-band"><div class="wrap cta-in"><div><h2>${t("cta_title")}</h2><p>${t("cta_text")}</p></div><div class="hero-actions"><a href="#/apply" class="btn btn-gold btn-lg">${t("apply_now")}</a><a href="${waLink()}" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">${icons.wa} ${t("whatsapp_us")}</a></div></div></section>`;
-const pageHead = (title, sub = "") => `<section class="page-head"><div class="wrap"><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ""}</div></section>`;
+const ctaBand = () => `<section class="cta-band">${wave("top")}<div class="wrap cta-in"><div><h2>${t("cta_title")}</h2><p>${t("cta_text")}</p></div><div class="hero-actions"><a href="#/apply" class="btn btn-gold btn-lg">${t("apply_now")}</a><a href="${waLink()}" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">${icons.wa} ${t("whatsapp_us")}</a></div></div></section>`;
+const pageHead = (title, sub = "") => `<section class="page-head"><div class="wrap"><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ""}</div>${wave("bottom")}</section>`;
 
 async function pageUniversities(type) {
   const unis = await col("universities");
   const title = type === "gov" ? t("nav_gov") : type === "private" ? t("nav_private") : t("nav_universities");
   const cities = [...new Set(unis.map((u) => P(u.city)).filter(Boolean))].sort();
-  setTimeout(() => {
+  onRendered(() => {
     const q = document.getElementById("uq"), c = document.getElementById("ucity"), grid = document.getElementById("ugrid");
     const draw = () => {
       const qs = q.value.trim().toLowerCase();
@@ -313,7 +360,7 @@ async function pageServices() {
 async function pageScholarships() {
   const list = await col("scholarships");
   return `${pageHead(t("nav_scholarships"))}<section class="section"><div class="wrap narrow">${list.map((s) => `
-    <div class="card sch-full">${s.image ? `<img src="${safeUrl(s.image)}" alt="" class="sch-img">` : ""}<h2>🏅 ${esc(P(s.title))}</h2>${paras(P(s.body))}
+    <div class="card sch-full">${s.image ? `<img src="${safeUrl(s.image)}" alt="" class="sch-img">` : ""}<h2>${lineIcon("🏅")} ${esc(P(s.title))}</h2>${paras(P(s.body))}
     <div class="row-gap">${s.deadline ? `<span class="price-pill">${t("deadline")}: ${fmtDate(s.deadline)}</span>` : ""}${s.link ? `<a class="link" href="${safeUrl(s.link)}" target="_blank" rel="noopener">${t("official_link")} ↗</a>` : ""}<a class="btn btn-gold" href="#/apply">${t("apply_now")}</a></div></div>`).join("") || `<p class="empty">${t("no_results")}</p>`}</div></section>`;
 }
 
@@ -331,7 +378,7 @@ async function pageCalendar(level) {
   const levels = ["bachelor", "graduate", "yos"].filter((l) => all.some((e) => (e.level || "bachelor") === l));
   const list = all.filter((e) => !level || (e.level || "bachelor") === level).map((e) => ({ ...e, st: calStatus(e, today) }))
     .sort((a, b) => order[a.st] - order[b.st] || String(a.st === "closed" ? b.regEnd : a.regEnd || a.regStart).localeCompare(String(a.st === "closed" ? a.regEnd : b.regEnd || b.regStart)));
-  setTimeout(() => {
+  onRendered(() => {
     const q = document.getElementById("cq"), clr = document.getElementById("cclear"), sel = document.getElementById("cst");
     const draw = () => {
       const v = q.value.trim().toLowerCase();
@@ -415,7 +462,7 @@ async function pageContact() {
 async function pageApply(params) {
   const [unis, services] = await Promise.all([col("universities"), col("services")]);
   const preUni = params.get("university") || "", preSvc = params.get("service") || "";
-  setTimeout(() => bindApplyForm(unis, services));
+  onRendered(() => bindApplyForm(unis, services));
   const req = '<span class="req">*</span>';
   return `${pageHead(t("form_title"), t("form_sub"))}<section class="section"><div class="wrap narrow">
   <form id="apply" class="form card" novalidate>
@@ -513,7 +560,7 @@ function pagePrivacy() {
 async function pageSearch(q) {
   const norm = (x) => String(x || "").toLowerCase().normalize("NFKD").replace(/[\u064B-\u065F\u0670\u0300-\u036f]/g, "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/ı/g, "i");
   const all3 = (o) => (o && typeof o === "object" ? [o.ar, o.en, o.tr].join(" ") : String(o || ""));
-  setTimeout(() => {
+  onRendered(() => {
     const f = document.getElementById("sform");
     f?.addEventListener("submit", (e) => { e.preventDefault(); location.hash = "#/search?q=" + encodeURIComponent(f.q.value.trim()); });
     if (!q) f?.q.focus();
@@ -541,12 +588,18 @@ async function pageSearch(q) {
 const notFound = () => `${pageHead(t("not_found"))}<section class="section"><div class="wrap"><a class="btn btn-gold" href="#/">${t("nav_home")}</a></div></section>`;
 
 // ---------- router ----------
+// Page code that must run once the page's HTML is on screen (the page transition delays the swap a little)
+let renderQueue = [];
+const onRendered = (fn) => renderQueue.push(fn);
+
 async function route() {
   const hash = location.hash.replace(/^#/, "") || "/";
   const [path, qs] = hash.split("?");
   const parts = path.split("/").filter(Boolean);
   const params = new URLSearchParams(qs || "");
   document.body.classList.remove("nav-open");
+  renderQueue = [];
+  const leaving = window.KAMMotion?.leave ? window.KAMMotion.leave() : null; // fades the old page while the new one loads
   let html;
   app.setAttribute("aria-busy", "true");
   try {
@@ -571,8 +624,11 @@ async function route() {
     console.error(e);
     html = `<section class="section"><div class="wrap"><p class="empty">${t("send_error")}</p></div></section>`;
   }
+  if (leaving) await leaving;
   app.innerHTML = html;
   app.removeAttribute("aria-busy");
+  const queued = renderQueue; renderQueue = [];
+  queued.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } });
   document.querySelectorAll(".nav a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + path || (path === "/" && a.getAttribute("href") === "#/")));
   const h1 = app.querySelector("h1");
   document.title = (path === "/" ? "" : (h1 ? h1.textContent + " | " : "")) + (P(S.siteName) || "KAM");
@@ -584,6 +640,7 @@ async function route() {
   if (window.KAMMotion) window.KAMMotion.onPage({ target: sec || null });
   else if (sec) sec.scrollIntoView({ block: "start" });
   else window.scrollTo(0, 0);
+  window.KAMScroll?.();
   if (path === "/prices") {
     const q = document.getElementById("pq");
     q?.addEventListener("input", () => {

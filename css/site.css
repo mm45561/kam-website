@@ -427,3 +427,120 @@ html.lenis { scroll-behavior: auto; }
   .hero-mark { display: flex; order: -1; justify-content: flex-start; }
   .hero-mark img { width: 120px; }
 }
+
+/* ================================================================
+   Visual upgrades (ideas 1-10). Anything that moves on its own only
+   runs under html.motion, which motion.js sets when the visitor has
+   not asked for reduced motion.
+   ================================================================ */
+
+/* 1. Glass header that shrinks on scroll + gold reading-progress line */
+.header { transition: background-color .3s, box-shadow .3s; }
+.header-in { transition: min-height .3s; }
+.brand-logo { transition: height .3s; }
+.scrolled .header { background: rgba(255, 255, 255, .82); -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); box-shadow: 0 6px 24px rgba(31, 54, 49, .08); }
+.scrolled .header-in { min-height: 62px; }
+.scrolled .brand-logo { height: 36px; }
+.scrolled .brand-logo.ar { height: 42px; }
+.scroll-progress { position: absolute; inset-inline: 0; bottom: 0; height: 3px; background: linear-gradient(90deg, var(--gold), #e3d3a8, var(--gold)); transform: scaleX(var(--progress, 0)); transform-origin: left; pointer-events: none; z-index: 1; }
+[dir=rtl] .scroll-progress { transform-origin: right; }
+.nav-open .header { background: var(--white); }
+
+/* 2. Cards: gold spotlight border + glow that follow the mouse */
+.card { position: relative; }
+.card::before, .card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .3s; z-index: 2; }
+.card::before { padding: 1.5px; background: radial-gradient(180px circle at var(--mx, 50%) var(--my, 50%), var(--gold), transparent 65%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.card::after { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(178, 160, 120, .14), transparent 65%); }
+@media (hover: hover) { .card:hover::before, .card:hover::after { opacity: 1; } }
+.service-card, .sch-card { transition: transform .25s, box-shadow .25s; will-change: transform; }
+.service-card:hover, .sch-card:hover { box-shadow: 0 18px 38px rgba(31, 54, 49, .15); }
+.service-card:active, .sch-card:active { transform: translateY(-2px); }
+
+/* 3. Line icons instead of emoji */
+svg.li { width: 1.2em; height: 1.2em; fill: none; stroke: var(--green); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; vertical-align: -.22em; flex: none; }
+svg.li .acc { stroke: var(--gold); }
+svg.li * { stroke-dasharray: 1; stroke-dashoffset: 0; }
+.svc-icon { background: var(--ivory); transition: transform .35s cubic-bezier(.2, .7, .2, 1), background-color .3s; }
+.svc-icon svg.li { width: 30px; height: 30px; }
+.service-card:hover .svc-icon { transform: translateY(-3px) rotate(-5deg); background: #efe3d3; }
+.ql { display: inline-flex; align-items: center; gap: 8px; transition: border-color .2s, color .2s, transform .2s; }
+.ql:hover { transform: translateY(-2px); }
+.sch-card h3 svg.li, .sch-full h2 svg.li { margin-inline-end: 4px; }
+
+/* 4. Page transition: handled in motion.js (fade + lift between pages) */
+
+/* 5. "How we work": gold rail + numbers that light up */
+.steps { position: relative; }
+.steps li { transition: border-color .4s, box-shadow .4s; }
+.steps .num { transition: background-color .4s, color .4s, transform .4s cubic-bezier(.3, 1.6, .5, 1), box-shadow .4s; }
+@media (min-width: 1101px) {
+  .steps { padding-top: 22px; }
+  .steps li { padding-top: 34px; }
+  .steps .num { position: absolute; top: -20px; inset-inline-start: 20px; margin: 0; box-shadow: 0 0 0 5px var(--ivory-2); }
+  .steps::before, .steps::after { content: ""; position: absolute; top: 22px; inset-inline: 40px; height: 3px; border-radius: 3px; transform: translateY(-50%); }
+  .steps::before { background: var(--line); }
+  .steps::after { background: linear-gradient(90deg, var(--green), var(--gold)); transform: translateY(-50%) scaleX(var(--rail, 1)); transform-origin: left; }
+  [dir=rtl] .steps::after { background: linear-gradient(270deg, var(--green), var(--gold)); transform-origin: right; }
+}
+.steps-anim li:not(.lit) .num { background: var(--white); color: var(--muted); box-shadow: inset 0 0 0 2px var(--line), 0 0 0 5px var(--ivory-2); transform: scale(.9); }
+.steps-anim li.lit { border-color: #d8c9ad; box-shadow: 0 10px 26px rgba(31, 54, 49, .08); }
+.steps-anim li.lit .num { transform: scale(1.06); }
+
+/* 6. Curved dividers inspired by the KAM mark */
+.wave { direction: ltr; position: absolute; left: 0; right: 0; height: 34px; overflow: hidden; pointer-events: none; z-index: 1; line-height: 0; }
+.wave svg { width: 200%; height: 100%; display: block; }
+.wave-bottom { bottom: -1px; }
+.wave-bottom path { fill: var(--ivory-2); }
+.wave-top { top: -33px; }
+.wave-top path { fill: var(--green); }
+.page-head, .cta-band { position: relative; }
+.hero { padding-bottom: 72px; }
+.page-head { padding-bottom: 62px; }
+.motion .wave svg { animation: wave-drift 22s linear infinite; }
+.motion .wave-top svg { animation-duration: 28s; }
+@keyframes wave-drift { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (max-width: 560px) { .wave { height: 22px; } .wave-top { top: -21px; } .hero { padding-bottom: 54px; } .page-head { padding-bottom: 50px; } }
+
+/* 7. Gold shimmer on the country name in the hero title */
+.gold-word { position: relative; display: inline-block; }
+.gold-word:not(.is-split), .gold-text { background: linear-gradient(100deg, var(--gold) 20%, #f6e8c3 40%, var(--gold) 60%); background-size: 250% 100%; background-position: 0 0; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gold-word::after { content: ""; position: absolute; inset-inline: 4%; bottom: .02em; height: 4px; border-radius: 4px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+.motion .gold-word:not(.is-split), .motion .gold-text { animation: shine 4.5s 1.8s ease-in-out infinite; }
+.motion .gold-word::after { transform: scaleX(0); animation: underline 1s 1.4s cubic-bezier(.2, .7, .2, 1) forwards; }
+@keyframes shine { 0% { background-position: 100% 0; } 60%, 100% { background-position: -60% 0; } }
+@keyframes underline { to { transform: scaleX(1); } }
+
+/* 8. Shiny gold buttons, magnetic pull (motion.js) and a breathing WhatsApp button */
+.btn-gold { position: relative; overflow: hidden; isolation: isolate; }
+.btn-gold:hover { box-shadow: 0 10px 24px rgba(178, 160, 120, .45); }
+.motion .btn-gold.btn-lg::after, .motion .nav-cta::after { content: ""; position: absolute; top: 0; bottom: 0; width: 45%; left: -60%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent); transform: skewX(-20deg); animation: btn-sweep 4.5s ease-in-out infinite; pointer-events: none; z-index: -1; }
+@keyframes btn-sweep { 0%, 70% { left: -60%; } 100% { left: 130%; } }
+.wa-fab::before, .wa-fab::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid #25D366; opacity: 0; pointer-events: none; }
+.motion .wa-fab::before, .motion .wa-fab::after { animation: wa-ring 2.8s ease-out infinite; }
+.motion .wa-fab::after { animation-delay: 1.4s; }
+@keyframes wa-ring { from { transform: scale(1); opacity: .7; } to { transform: scale(1.75); opacity: 0; } }
+.wa-fab { transition: transform .25s; }
+.wa-fab:hover { transform: scale(1.07); }
+
+/* 9. University cards: campus photo with a soft zoom, logo badge, nicer placeholder */
+.thumb { overflow: hidden; }
+.thumb img.photo { transition: transform .8s cubic-bezier(.2, .7, .2, 1); }
+.uni-card:hover .thumb img.photo, .uni-card:hover .thumb-ph img { transform: scale(1.08); }
+.thumb-ph { background: radial-gradient(circle at 85% 15%, rgba(178, 160, 120, .35), transparent 45%), radial-gradient(circle at 10% 95%, rgba(178, 160, 120, .2), transparent 40%), linear-gradient(135deg, var(--green), var(--green-2)); }
+.thumb-ph img { transition: transform .8s cubic-bezier(.2, .7, .2, 1); }
+.thumb-logo { position: absolute; bottom: 10px; inset-inline-end: 10px; width: 46px; height: 46px; border-radius: 12px; background: var(--white); padding: 5px; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); z-index: 1; }
+.thumb-logo img { width: 100%; height: 100%; object-fit: contain; }
+.uni-card .tag { z-index: 1; }
+
+/* 10. FAQ: + turns into × (the slide is done in motion.js) */
+.faq summary::after { content: "+"; color: var(--gold); font-size: 1.5rem; transition: transform .35s cubic-bezier(.2, .7, .2, 1); }
+.faq details[open] summary::after { content: "+"; transform: rotate(45deg); }
+.faq details { transition: border-color .3s, box-shadow .3s; }
+.faq details[open] { border-color: #d8c9ad; box-shadow: var(--shadow); }
+.faq summary:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; border-radius: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .header, .header-in, .brand-logo, .svc-icon, .ql, .steps li, .steps .num, .thumb img, .thumb-ph img, .wa-fab, .faq summary::after, .service-card, .sch-card { transition: none !important; }
+}
+.uni-tabs { transition: top .3s; }
+.scrolled .uni-tabs { top: 62px; }
